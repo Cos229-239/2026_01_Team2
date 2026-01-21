@@ -11,6 +11,7 @@ Start here. Keep this README updated with your team name, members, and a short p
 
 Transition MyHQ concept into a functional app
 
+### Virtural Environment setup is located in the .txt file in the Backend parent folder. Follow those steps####
 ---
 # React (Next.js)
 ## How to run

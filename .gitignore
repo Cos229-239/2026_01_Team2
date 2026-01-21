@@ -82,6 +82,9 @@ desktop.ini
 .idea/
 *.iml
 
+# added for the .vs/ FILES
+.vs/
+
 
 ###############################################################################
 # LOGS / TEMP FILES
@@ -394,5 +397,6 @@ firestore-debug.log
 !README.md
 !docs/**
 !.github/workflows/*.yml
-b a c k e n d /  
+b a c k e n d / 
+ 
  
