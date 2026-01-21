@@ -1,0 +1,56 @@
+BACKEND SETUP INSTRUCTIONS:
+This is entended for backend dev. Follow the steps below to sync your local environment with the <Backend/> parent folder structure
+
+1.) Pull repo entry showing:
+	2026_01_Team2/        (root)
+		-.venv/                <-------- Local only (keep at root in window file explorer)
+		-Backend/			<-----------Parent folder for backend dev
+				app.py
+				requirements.txt
+				backend_setup_instructions.txt
+
+
+2.) Virtural Environment Setup
+	*Open your terminal in the root folder (2026_01_Team2) 
+			**DO NOT** 
+					-Create a new venv inside the backed folder; we use one global venv for the entire workspace.
+
+					// # Creating the environment from new
+						in terminal: from the root folder 
+							python -m venv .venv
+
+					// # Activating the environment
+						# Windows:
+							.venv\Scripts\activate
+
+						# Mac/Linux:
+							source .venv/bin/activate
+
+3.) Installation
+	*Once the terminal shows ( .venv ) at the start of the line, move into the backend folder and install the dependencies:
+		cd Backend
+			pip install -r requirements.txt
+
+4.) Running the Backend Server
+	* To start the Flask server for testing:
+		- Stay inside the Backend folder and run:
+			
+			python app.py
+
+		-Verification:
+			open a web browser and go to:
+				http://127.0.0.1:5000
+
+				if: ( "Team 2 Flask Server is Running"  your setup is correct and verified.)
+
+						else: Troubleshoot
+							- File Not Found:
+								if python app.py fails, ensure your terminal path ends in the ..../Backend. 
+									Type:  dir
+										To confirm app.py is visible in the list
+
+							- Import Errors:
+								Ensure your ( .venv ) is active and you ran the pip install command while inside the Backend folder.
+
+							- Port in Use: 
+								if the server fails to start, make sure you don't have another instance of app.py running in a different terminal
