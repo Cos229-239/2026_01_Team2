@@ -5,7 +5,7 @@ import './App.css'
 function App() {
   //example get response from the backend of flask
   const fetchAPI = async () => {
-    const response = await axios.get("http://localhost:8080/map");
+    const response = await axios.get("http://localhost:5000/map");
     console.log(response.data);
   }
   //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
