@@ -82,6 +82,9 @@ desktop.ini
 .idea/
 *.iml
 
+# added for the .vs/ FILES
+.vs/
+
 
 ###############################################################################
 # LOGS / TEMP FILES
