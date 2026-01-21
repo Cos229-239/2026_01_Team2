@@ -10,3 +10,15 @@ Start here. Keep this README updated with your team name, members, and a short p
 - Dwight Thompson
 
 Transition MyHQ concept into a functional app
+
+---
+# React (Next.js)
+## How to run
+1) Install Node.js
+    - https://nodejs.org/en
+2) Verify Install
+    - check for version in the terminal`node -v`
+    - check for the shortcut in the terminal`npm -v`    
+3) Change directory to `/frontend/` in the terminal
+4) `npm run dev`
+5) [Check localhost:3000](http://localhost:3000/)
