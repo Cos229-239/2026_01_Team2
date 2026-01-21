@@ -15,6 +15,9 @@ function App() {
   // nothing is returned at the moment but will be populated after gathering the information
   return (
     <>
+    <h1 className='flex justify-center align-center'>
+      This React Page is Working
+    </h1>
     </>
   )
 }
