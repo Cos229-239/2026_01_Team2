@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from "axios";
-import './App.css'
+import Sidebar from './components/sidebar';
+
 
 function App() {
   //example get response from the backend of flask
@@ -15,9 +16,17 @@ function App() {
   // nothing is returned at the moment but will be populated after gathering the information
   return (
     <>
-    <h1 className='flex justify-center align-center'>
-      This React Page is Working
-    </h1>
+      <main className='h-screen w-screen flex-row align-center'>
+        <div className='grid grid-flow-col grid-cols-8'>
+          <div className='text-center'>
+            <Sidebar />
+          </div>
+          <div className='flex justify-center col-span-7'>
+            <h1 className='text-2xl'>This React Page is Working</h1>
+          </div>
+
+        </div>
+      </main>
     </>
   )
 }
