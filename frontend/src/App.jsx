@@ -17,12 +17,12 @@ function App() {
   return (
     <>
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
-        <div className='grid grid-flow-col gap-2'>
-          <div className='col-span-1'>
+        <div className='grid grid-flow-col gap-2'> {/*top layer*/}
+          <div className='col-span-1'> {/* Will be moved into the child component */}
             <Sidebar />
           </div>
           <div className='flex col-span-7 row-span-1'>
-            <div className='w-full'>
+            <div className='w-full'> {/* keep this within the parent for all contnt */}
               <h1 className='text-2xl'>This React Page is Working</h1>
             </div>
           </div>
