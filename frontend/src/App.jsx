@@ -16,13 +16,15 @@ function App() {
   // nothing is returned at the moment but will be populated after gathering the information
   return (
     <>
-      <main className='h-screen w-screen flex-row align-center'>
-        <div className='grid grid-flow-col grid-cols-8'>
-          <div className='text-center'>
+      <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
+        <div className='grid grid-flow-col gap-2'>
+          <div className='col-span-1'>
             <Sidebar />
           </div>
-          <div className='flex justify-center col-span-7'>
-            <h1 className='text-2xl'>This React Page is Working</h1>
+          <div className='flex col-span-7 row-span-1'>
+            <div className='w-full'>
+              <h1 className='text-2xl'>This React Page is Working</h1>
+            </div>
           </div>
 
         </div>
