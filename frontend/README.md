@@ -1,3 +1,32 @@
+# How to run
+- __Install [Nodejs](https://nodejs.org/en/download)__
+   - Verify install by running these commands
+     ```bash
+     node -v
+     ```
+     ```bash
+     npm -v
+     ```
+  - Should look like <img width="480" height="25" alt="image" src="https://github.com/user-attachments/assets/d77435ad-894a-4d4f-beba-682b258fe54b" /><br>
+    And <img width="582" height="28" alt="image" src="https://github.com/user-attachments/assets/8ce95599-a3c2-4459-81e5-c638d3a0d75d" />
+
+- __Run React__
+   - Open terminal in VSCode (`ctrl` + \` _backtick_)
+   - Navigate to the root directory of the frontend
+     ```bash
+     cd <git repo>/frontend
+     ```
+   - Install dependencies (first run, or whenever dependencies change)
+     ```bash
+     npm install
+     npm run dev
+     ```
+   - Open (`ctrl + left mouse button` localhost site)
+     <img width="610" height="87" alt="image" src="https://github.com/user-attachments/assets/41445966-e7e2-4166-ad8b-c646a2e6a184" />
+  - Expected Result
+    <img width="955" height="942" alt="image" src="https://github.com/user-attachments/assets/738893a2-980d-4ee3-9d06-46b7e8aa6145" />
+---
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
