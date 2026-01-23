@@ -21,10 +21,57 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)                    #database initialization
 
-
 #this-> allows class based routing
 api = Api(app)                  # RESTful API wrapper Initialization
 
+# Bridge point to Phase 7 card: Logic Implementation
+# Helper for Phase 7
+# replace "empty" types with actual game assests/rules.
+def generate_grid(rows, cols):
+    grid = []
+    for r in range(rows):
+        for c in range(cols):
+            grid.append({
+                "x": c,
+                "y": r,
+                "type": "empty",
+                "id": f"cell_{c}_{r}"            #Unique ID for react key
+            })
+    return grid
+
+### INTEGRATION PLANNING
+## Test Trigger 'A': http://127.0.0.1:5000/api/game/init?game_type=standard      <expected return is "total_cells": 400>
+# Test Trigger 'B': http://127.0.0.1:5000/api/game/init?game_type=mini              <expected return is "total_cells": 25>
+# Test: Place a starting piece in the center #####
+# Mapping coordinate system logic (Grid)
+# Game Selection Triggers
+@app.route('/api/game/init')
+def initialize_game():
+    #Accessor for game_type from the URL (?gmae_type=)
+    #Default to standard if nothing is provided
+   
+    game_type = request.args.get('game_type', 'standard')
+    # Dynamic Generation <= 400 cells
+    if game_type == 'mini':
+        rows = 5
+        cols = 5
+    elif game_type == 'standard':
+        rows = 20
+        cols = 20
+    else:
+        # If a pick and not in databased
+        return jsonify({"error": "Unkonwn game type"}), 400
+    
+    # Helper call for grid gen
+    cells = generate_grid(rows, cols)
+
+    return jsonify({
+        "selected_game": game_type,
+        "grid_size": f"{rows}x{cols}",
+        "total_cells": len(cells),
+        "cells": cells,
+        "status": "ready"
+})
 
 
 # Home routing for general verification
