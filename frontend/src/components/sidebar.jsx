@@ -1,4 +1,4 @@
-
+import { Button } from "@heroui/react";
 
 export default function Sidebar(){
     const pages = [
@@ -7,11 +7,11 @@ export default function Sidebar(){
     "id":0
   },
   {
-    "name":"Profile",
+    "name":"Tool",
     "id":1
   },
   {
-    "name":"Designer",
+    "name":"About",
     "id":2
   }
 ];
@@ -20,7 +20,7 @@ export default function Sidebar(){
     <div className='static h-screen overflow-auto bg-neutral-500 col-span-3'>
         {pages.map((page) => (
             <div key={page.id} className='text-lg p-5'>
-              <button>{page.name}</button>
+              <Button color="primary" radius="md">{page.name}</Button>
             </div>
         ))}
     </div>
