@@ -1,8 +1,8 @@
-from flask                      import Flask, jsonify, request
-from flask_cors             import CORS                                     # For cross origin resource sharing with frontend
-from flask_sqlalchemy import SQLAlchemy                        # For database management
-from flask_restful import Api                                                 # For api design
-from flask_talisman import Talisman                                    #Security extensions
+from flask                          import Flask, jsonify, request
+from flask_cors                 import CORS                                     # For cross origin resource sharing with frontend
+from flask_sqlalchemy     import SQLAlchemy                        # For database management
+from flask_restful              import Api                                        # For api design
+from flask_talisman          import Talisman                               #Security extensions
 
 app = Flask(__name__)
 # CORS initialization enables Cors for all routes
@@ -60,7 +60,7 @@ def initialize_game():
         cols = 20
     else:
         # If a pick and not in databased
-        return jsonify({"error": "Unkonwn game type"}), 400
+        return jsonify({"error": "Unknown game type"}), 400
     
     # Helper call for grid gen
     cells = generate_grid(rows, cols)
