@@ -397,3 +397,6 @@ firestore-debug.log
 
 # Android local SDK config (machine-specific)
 local.properties
+
+# Android local SDK config (machine-specific)
+local.properties
