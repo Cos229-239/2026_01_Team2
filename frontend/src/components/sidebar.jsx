@@ -1,20 +1,19 @@
-import { useState } from 'react';
-const pages = [
-{
-"name":"Home",
-"id":0,
-"href":"/"
-},
-{
-"name":"Profile",
-"id":1,
-"href":"/profile"
-},
-{
-"name":"Designer",
-"id":2,
-"href":"/designer"
-}
+import { Button } from "@heroui/react";
+
+export default function Sidebar(){
+    const pages = [
+  {
+    "name":"Home",
+    "id":0
+  },
+  {
+    "name":"Tool",
+    "id":1
+  },
+  {
+    "name":"About",
+    "id":2
+  }
 ];
 
 export default function Sidebar(){
@@ -32,8 +31,8 @@ export default function Sidebar(){
       </div>
       <nav>
         {pages.map((page) => (
-            <div key={page.id} href={page.href} className={`${toggleSidebar ? 'hidden': ''} text-neutral-800 text-lg p-5 hover:bg-neutral-400 hover:text-neutral-600`}>
-              <button>{page.name}</button>
+            <div key={page.id} className='text-lg p-5'>
+              <Button color="primary" radius="md">{page.name}</Button>
             </div>
         ))}
       </nav>
