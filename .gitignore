@@ -400,3 +400,5 @@ firestore-debug.log
 b a c k e n d / 
  
  
+# Android local SDK config (machine-specific)
+local.properties
