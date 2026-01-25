@@ -1,6 +1,14 @@
 import { useEffect } from 'react'
 import axios from "axios";
 import Sidebar from './components/sidebar';
+import {
+    Button,
+    Card,
+    CardHeader,
+    CardBody,
+    Divider,
+    Input
+} from "@heroui/react";
 
 
 function App() {
@@ -26,7 +34,6 @@ function App() {
               <h1 className='text-2xl'>This React Page is Working</h1>
             </div>
           </div>
-
         </div>
       </main>
     </>
