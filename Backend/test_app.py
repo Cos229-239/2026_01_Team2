@@ -45,7 +45,7 @@ def test_grid_initialization_standard(client):
 # In Place for potential dynamic grid sizing
 #========================================================
 def test_grid_initialization_mini(client):
-    """Verify that a 'mini  game type returns exactly 25 cells."""
+    """Verify that a 'mini' game type returns exactly 25 cells."""
     response = client.get('/api/game/init?game_type=mini')
     data = response.get_json()
 
