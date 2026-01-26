@@ -6,8 +6,15 @@ import Sidebar from './components/sidebar';
 function App() {
   //example get response from the backend of flask
   const fetchAPI = async () => {
-    const response = await axios.get("http://localhost:5000/map");
-    console.log(response.data);
+    // 1. Use Environment Variable (falls back to localhost if missing)
+    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+    try {
+      const response = await axios.get(`${API_BASE}/api/test`); 
+      console.log("Backend Response:", response.data);
+    } catch (error) {
+      console.error("Error connecting to backend:", error);
+    }
   }
   //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
   useEffect (() => {
