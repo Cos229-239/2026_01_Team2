@@ -24,13 +24,11 @@ function App() {
   // nothing is returned at the moment but will be populated after gathering the information
   return (
     <>
-      <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
+      <main className='h-screen w-screen flex-row bg-neutral-100'>
         <div className='grid grid-flow-col grid-cols-12 gap-4'> {/*top layer*/}
             <Sidebar />
-          <div className='flex col-span-10 row-span-1'>
-            <div className='w-full'> {/* keep this within the parent for all contnt */}
-              <h1 className='text-2xl'>This React Page is Working</h1>
-            </div>
+          <div className='col-span-10'>
+              <h1 className='h-full text-2xl'>This React Page is Working</h1>
           </div>
         </div>
       </main>
