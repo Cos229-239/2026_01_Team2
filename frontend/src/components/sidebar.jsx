@@ -19,17 +19,24 @@ export default function Sidebar(){
 ];
 
     return (
-    <div className='col-span-3'>
-        <nav className='h-screen bg-neutral-200'>
+    <div className='w-sm h-screen'>
+        <nav className='h-full bg-neutral-200'>
           <div className="flex justify-between p-8 content-center">
-              <img width='32' src={brand} alt='brand' />
-              <img width='24' className='py-1 ' src={collapse} alt='collapse' /> {/* TODO: Add Collapsability interaction to the button . Add in hover capability*/}
+              <img width='36' src={brand} alt='brand' />
+              <Button className=" hover:bg-neutral-300 rounded-md">
+                <img width='24'  src={collapse} alt='collapse' /> {/* TODO: Add Collapsability interaction to the button . Add in hover capability*/}
+              </Button>
           </div>
           {pages.map((page) => (
-              <div key={page.id} className='text-xl py-1 px-4 hover:bg-neutral-400 rounded-md'>
-                <Button className='flex justify-start h-16 text-neutral-800' radius="md">{page.name}</Button>
+              <div key={page.id} className=' text-xl hover:bg-neutral-300'>
+                <Button 
+                  className='px-8 justify-start py-8 h-full w-full text-neutral-800' 
+                  radius="md">
+                    {page.name}
+                </Button>
               </div>
           ))}
+
         </nav>
       </div>
     )

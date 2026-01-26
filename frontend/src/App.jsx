@@ -25,10 +25,10 @@ function App() {
   return (
     <>
       <main className='h-screen w-screen flex-row bg-neutral-100'>
-        <div className='grid grid-flow-col grid-cols-12 gap-4'> {/*top layer*/}
+        <div className='grid grid-flow-col grid-cols-3 gap-4'> {/*top layer*/}
             <Sidebar />
-          <div className='col-span-10'>
-              <h1 className='h-full text-2xl'>This React Page is Working</h1>
+          <div className='text-center place-content-center'>
+              <div className='text-2xl'>This React Page is Working</div>
           </div>
         </div>
       </main>
