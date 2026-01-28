@@ -6,7 +6,7 @@ export default function PageHeader({ gameName, path }){
             <div>
                 {path}
             </div>
-            <div className='text-2xl text-neutral-700'>
+            <div className='text-3xl text-neutral-700'>
                 {gameName}
             </div>
         </div>

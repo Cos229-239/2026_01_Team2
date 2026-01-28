@@ -28,12 +28,12 @@ function App() {
           <div className='col-span-2'> {/* Will be moved into the child component */}
             <Sidebar onSelect={setPage} selectedPage={currentPage} />
           </div>
-          <div className='h-full w-full p-4'>
+          <div className='flex flex-col h-screen w-full p-4'>
             <div> {/* keep this within the parent for all contnt */}
               {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
               <PageHeader gameName={gameInfo.gameName} path={GetPath(currentPage, gameInfo.path)} />
             </div>
-            <div className='outline-1 outline-neutral-300 rounded-md w-full h-248 overflow-auto'>
+            <div className='outline-1 outline-neutral-300 rounded-md overflow-auto'>
               <Designer />
             </div>
           </div>

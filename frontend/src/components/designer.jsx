@@ -21,7 +21,7 @@ function Designer(){
     fetchAPI();
     },[])
     return (
-        <div className="">
+        <>
             {error && <div className = "text-warning-600">Error: {error}</div>}
             {!gridData ? (
                 <div>Loading...</div>): (
@@ -35,7 +35,7 @@ function Designer(){
                     </div>
                 )
             }
-        </div>
+        </>
     )
 }
 

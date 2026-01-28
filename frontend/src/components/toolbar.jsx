@@ -23,12 +23,12 @@ export default function Toolbar(){
     }
 
     return (
-        <div className="h-11/12 w-sm bg-neutral-300 rounded-bl-md rounded-tl-md pt-4 pb-4 ">
+        <div className="h-11/12 w-sm bg-neutral-300 rounded-bl-md rounded-tl-md pt-4 pb-4 place-content-center">
             <div>
                 {
                     toolItems.Tools.map(
                         (tool) => (
-                            <div id={tool.id} className="text-xl pl-4 p-5 text-end">{tool.name}</div>
+                            <div id={tool.id} className="text-xl pl-4 p-5 ">{tool.name}</div>
                         )
                     )
                 }
