@@ -18,7 +18,7 @@ function App() {
             <div> {/* keep this within the parent for all contnt */}
               <h1 className='text-2xl'>This React Page is Working</h1>
             </div>
-            <div className=''>
+            <div className='outline-1 outline-neutral-300 rounded-md w-3/4 h-248 overflow-auto'>
               <Designer />
             </div>
           </div>

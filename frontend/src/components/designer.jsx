@@ -15,19 +15,24 @@ function Designer(){
             setError(err?.message ?? "request failed");
             console.error(err);
         }
-    // console.log(response.data);
     };
     //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
     useEffect (() => {
     fetchAPI();
     },[])
-    // console.log(response.data)
     return (
-        <div className="outline-1 overflow-hidden outline-neutral-300 rounded-md">
+        <div className="">
             {error && <div className = "text-warning-600">Error: {error}</div>}
             {!gridData ? (
                 <div>Loading...</div>): (
-                    <div>{gridData.data.grid_size}</div>
+                    <div className='text-neutral-800 p-4'>
+                        {
+                            gridData.data.cells.map((row, rowIdx)=>(
+                                <div id={rowIdx}> {JSON.stringify(row)} </div>
+                            )
+                            )
+                        }
+                    </div>
                 )
             }
         </div>
