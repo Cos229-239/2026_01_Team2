@@ -2,7 +2,7 @@ import { Button } from "@heroui/react";
 import collapse from '../assets/sidebar-collapse.svg';
 import brand from '../assets/brand.svg';
 
-export default function Sidebar(){
+export default function Sidebar( { onSelect, selectedPage }){
     const pages = [
   {
     "name":"Home",
@@ -19,7 +19,7 @@ export default function Sidebar(){
 ];
 
     return (
-    <div className='w-sm h-screen'>
+    <div className='w-2xs h-screen'>
         <nav className='h-full bg-neutral-200'>
           <div className="flex justify-between p-8 content-center">
               <img width='36' src={brand} alt='brand' />
@@ -28,9 +28,14 @@ export default function Sidebar(){
               </Button>
           </div>
           {pages.map((page) => (
-              <div key={page.id} className=' text-xl hover:bg-neutral-300'>
+              <div key={page.id} className={
+                `$(
+                  selectedPage == page.id ?
+                  'hover:bg-neutral-500 bg-neutral-400':
+                  'hover:bg-neutral-300 bg-neutral-300'
+                  ) text-xl`} >
                 <Button 
-                  className='px-8 justify-start py-8 h-full w-full text-neutral-800' 
+                  onClick={onSelect} className='px-8 justify-start py-8 h-full w-full text-neutral-800' 
                   radius="md">
                     {page.name}
                 </Button>

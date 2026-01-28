@@ -1,27 +1,45 @@
+import { useState } from 'react'
 import Sidebar from './components/sidebar';
 import Designer from './components/designer';
+import Toolbar from './components/toolbar';
+import PageHeader from './components/pageHeader';
+
+//will be deprecated later on once there is additional games added
+const gameInfo = {
+  "gameName":"Clash of Clans",
+  "path": "Clash Of Clans"
+}
+
+
+function GetPath({currentPage, path}){
+  return(
+    `${currentPage} / ${path}`
+  )
+}
 
 function App() {
+  const [ currentPage, setPage ] = useState("designer");
 
 
-
-  // console.log(gridData);
-  // nothing is returned at the moment but will be populated after gathering the information
   return (
     <>
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
         <div className='flex'> {/*top layer*/}
           <div className='col-span-2'> {/* Will be moved into the child component */}
-            <Sidebar />
+            <Sidebar onSelect={setPage} selectedPage={currentPage} />
           </div>
           <div className='h-full w-full p-4'>
             <div> {/* keep this within the parent for all contnt */}
-              <h1 className='text-2xl'>This React Page is Working</h1>
+              {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
+              <PageHeader gameName={gameInfo.gameName} path={GetPath(currentPage, gameInfo.path)} />
             </div>
-            <div className='outline-1 outline-neutral-300 rounded-md w-3/4 h-248 overflow-auto'>
+            <div className='outline-1 outline-neutral-300 rounded-md w-full h-248 overflow-auto'>
               <Designer />
             </div>
           </div>
+            <div className='place-content-center'>
+              <Toolbar />
+            </div>
 
         </div>
       </main>
