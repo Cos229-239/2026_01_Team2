@@ -1,15 +1,8 @@
 import { useEffect } from 'react'
 import axios from "axios";
 import Sidebar from './components/sidebar';
-import {
-    Button,
-    Card,
-    CardHeader,
-    CardBody,
-    Divider,
-    Input
-} from "@heroui/react";
-
+import Designer from "./components/designer";
+import './App.css'
 
 function App() {
   //example get response from the backend of flask
@@ -24,11 +17,15 @@ function App() {
   // nothing is returned at the moment but will be populated after gathering the information
   return (
     <>
-      <main className='h-screen w-screen flex-row bg-neutral-100'>
-        <div className='grid grid-flow-col grid-cols-3 gap-4'> {/*top layer*/}
-            <Sidebar />
-          <div className='text-center place-content-center'>
-              <div className='text-2xl'>This React Page is Working</div>
+      <main className='h-screen w-screen flex-col bg-neutral-100'>
+        <div className='flex'> {/*top layer*/}
+          <Sidebar />
+          <div className='justify-stretch pl-4 pr-4 w-screen h-screen'>
+            <div className='text-center'>
+                <div className='text-2xl'>This React Page is Working</div>
+            </div>
+            
+            <Designer />
           </div>
         </div>
       </main>
