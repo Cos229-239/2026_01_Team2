@@ -30,13 +30,15 @@ api = Api(app)                  # RESTful API wrapper Initialization
 def generate_grid(rows, cols):
     grid = []
     for r in range(rows):
+        row_data = []                           #This->creates a new list for the current row
         for c in range(cols):
-            grid.append({
+            row_data.append({
                 "x": c,
                 "y": r,
                 "type": "empty",
-                "id": f"cell_{c}_{r}"            #Unique ID for react key
+                "id": f"cell_{c}_{r}"               #Unique ID for react key
             })
+        grid.append(row_data)     #This->Appends each completed row to the grid
     return grid
 
 ### INTEGRATION PLANNING
@@ -53,23 +55,24 @@ def initialize_game():
     game_type = request.args.get('game_type', 'standard')
     # Dynamic Generation <= 400 cells
     if game_type == 'mini':
-        rows = 5
-        cols = 5
+        rows, cols  = 5, 5
+        
     elif game_type == 'standard':
-        rows = 20
-        cols = 20
+        rows, cols  = 20, 20
+        
     else:
         # If a pick and not in databased
         return jsonify({"error": "Unknown game type"}), 400
     
     # Helper call for grid gen
-    cells = generate_grid(rows, cols)
+    grid_data  = generate_grid(rows, cols)
 
     return jsonify({
         "selected_game": game_type,
         "grid_size": f"{rows}x{cols}",
-        "total_cells": len(cells),
-        "cells": cells,
+        "rows": rows,
+        "cols": cols,
+        "grid": grid_data,                  #This-> is the 2d array return   
         "status": "ready"
 })
 
