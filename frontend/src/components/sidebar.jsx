@@ -35,7 +35,7 @@ export default function Sidebar( { onSelect, selectedPage }){
                   'hover:bg-neutral-300 bg-neutral-300'
                   ) text-xl`} >
                 <Button 
-                  onClick={onSelect} className='px-8 justify-start py-8 h-full w-full text-neutral-800' 
+                  onSelect={ ()=> onSelect(page.name)} className='px-8 justify-start py-8 h-full w-full text-neutral-800' 
                   radius="md">
                     {page.name}
                 </Button>
