@@ -10,7 +10,7 @@ function Designer(){
     const fetchAPI = async () => {
         try {
             const res = await axios.get("http://localhost:5000/api/game/init");
-            setGridData(res);
+            setGridData(res.data);
         } catch (err) {
             setError(err?.message ?? "request failed");
             console.error(err);
@@ -20,18 +20,22 @@ function Designer(){
     useEffect (() => {
     fetchAPI();
     },[])
+
     return (
         <>
             {error && <div className = "text-warning-600">Error: {error}</div>}
             {!gridData ? (
                 <div>Loading...</div>): (
                     <div className='text-neutral-800 p-4'>
-                        {
-                            gridData.data.cells.map((row, rowIdx)=>(
-                                <div id={rowIdx}> {JSON.stringify(row)} </div>
-                            )
-                            )
-                        }
+                        {gridData.grid.map((row, rowId) => (
+                            <div key={rowId} className='flex'>
+                                {row.map((cell) =>(
+                                    <div key={cell.id} className='p-1 border'>
+                                        {cell.type}
+                                        </div>
+                                ))}
+                                </div>
+                        ))}
                     </div>
                 )
             }
