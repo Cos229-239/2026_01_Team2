@@ -1,4 +1,5 @@
 import { Button } from "@heroui/react";
+// This component provides the primary means of navigation. On mobile this component is concealed via a Hamburger Menu.
 
 export default function Sidebar(){
     const pages = [
@@ -20,7 +21,7 @@ export default function Sidebar(){
     <div className='static h-screen overflow-auto bg-neutral-500 col-span-3'>
         {pages.map((page) => (
             <div key={page.id} className='text-lg p-5'>
-              <Button color="primary" radius="md">{page.name}</Button>
+              <Button class="bg-primary " color="primary" radius="md">{page.name}</Button>
             </div>
         ))}
     </div>

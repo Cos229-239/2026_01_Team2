@@ -7,7 +7,8 @@ import {
     CardHeader,
     CardBody,
     Divider,
-    Input
+    Input,
+    Image
 } from "@heroui/react";
 
 
