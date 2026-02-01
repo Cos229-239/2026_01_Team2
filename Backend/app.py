@@ -1,8 +1,13 @@
-from flask                          import Flask, jsonify, request
+from operator import imatmul
+import os
+from flask                          import Flask, jsonify, request, send_from_directory
 from flask_cors                 import CORS                                     # For cross origin resource sharing with frontend
 from flask_sqlalchemy     import SQLAlchemy                        # For database management
 from flask_restful              import Api                                        # For api design
-from flask_talisman          import Talisman                               #Security extensions
+from flask_talisman          import Talisman
+from sqlalchemy.orm.base import PASSIVE_NO_FETCH
+from sqlalchemy.types import Concatenable
+from werkzeug.utils import _filename_ascii_strip_re                               #Security extensions
 
 app = Flask(__name__)
 # CORS initialization enables Cors for all routes
@@ -19,14 +24,51 @@ Talisman(app, force_https=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)                    #database initialization
+# Path to the 'assets' folder for this script
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
+
+# Database initialization
+db = SQLAlchemy(app) 
+#db file creation and force placement to bypass need for 'class' 
+with app.app_context():
+    db.create_all()
 
 #this-> allows class based routing
 api = Api(app)                  # RESTful API wrapper Initialization
 
-# Bridge point to Phase 7 card: Logic Implementation
-# Helper for Phase 7
-# replace "empty" types with actual game assests/rules.
+
+#------ ASSET SERVING ROUTES-------/
+# Replace "empty" types with actual game assests/rules.
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    """Serves files from the assets directory and its subfolder"""
+    return send_from_directory(ASSETS_DIR, filename)
+
+@app.route('/api/assets')
+def get_asset_manifest():
+    """Scans subFolders and returns a categorized list of images"""
+    manifest = {}
+    try:
+        if not os.path.exists(ASSETS_DIR):
+            return jsonify({"assets": {}, "message": "Assets folder missing"}), 200
+
+        # Iterate through subFolders for category's images
+        for category in os.listdir(ASSETS_DIR):
+            cat_path = os.path.join(ASSETS_DIR, category)
+            if os.path.isdir(cat_path):
+                # flitering for image files
+                images = [f for f in os.listdir(cat_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+                if images:
+                    manifest[category] = images
+        return jsonify({"assets": manifest})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
+
+# ----- Grid Logic----------/
 def generate_grid(rows, cols):
     grid = []
     for r in range(rows):
