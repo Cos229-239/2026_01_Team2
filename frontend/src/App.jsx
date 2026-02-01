@@ -1,6 +1,10 @@
 import { useEffect } from 'react'
 import axios from "axios";
 import Sidebar from './components/sidebar';
+import Header from './components/header';
+import Footer from './components/footer';
+import FAQ from './components/faq';
+import Hero from './components/hero';
 import {
     Button,
     Card,
@@ -26,6 +30,7 @@ function App() {
   return (
     <>
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
+      <Header />
         <div className='grid grid-flow-col grid-cols-12 gap-4'> {/*top layer*/}
           <div className='col-span-2'> {/* Will be moved into the child component */}
             <Sidebar />
@@ -33,9 +38,12 @@ function App() {
           <div className='flex col-span-10 row-span-1'>
             <div className='w-full'> {/* keep this within the parent for all contnt */}
               <h1 className='text-2xl'>This React Page is Working</h1>
+              <Hero />
             </div>
+            <FAQ />
           </div>
         </div>
+        <Footer />
       </main>
     </>
   )
