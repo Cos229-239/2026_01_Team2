@@ -30,7 +30,7 @@ function Designer(){
                         {gridData.grid.map((row, rowId) => (
                             <div key={rowId} className='flex'>
                                 {row.map((cell) =>(
-                                    <div key={cell.id} className='p-1 border'>
+                                    <div key={cell.id} className='p-2 border h-1/20 w-1/20 hover:bg-neutral-400'>
                                         {cell.type}
                                         </div>
                                 ))}

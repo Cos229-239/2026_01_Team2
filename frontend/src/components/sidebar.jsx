@@ -1,6 +1,9 @@
 import { Button } from "@heroui/react";
 import collapse from '../assets/sidebar-collapse.svg';
 import brand from '../assets/brand.svg';
+import brush from '../assets/sidebar-Pencil-Brush.svg';
+import paper from '../assets/sidebar-Pencil-Paper.svg';
+
 
 export default function Sidebar( { onSelect, selectedPage }){
     const pages = [
@@ -9,7 +12,7 @@ export default function Sidebar( { onSelect, selectedPage }){
     "id":0
   },
   {
-    "name":"Tool",
+    "name":"Layout",
     "id":1
   },
   {
@@ -19,6 +22,7 @@ export default function Sidebar( { onSelect, selectedPage }){
 ];
 
     return (
+      
     <div className='w-2xs h-screen'>
         <nav className='h-full bg-neutral-200'>
           <div className="flex justify-between p-8 content-center">
@@ -41,7 +45,6 @@ export default function Sidebar( { onSelect, selectedPage }){
                 </Button>
               </div>
           ))}
-
         </nav>
       </div>
     )
