@@ -8,8 +8,10 @@ function Designer(){
 
     //example get response from the backend of flask
     const fetchAPI = async () => {
+        const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
         try {
-            const res = await axios.get("http://localhost:5000/api/game/init");
+            const res = await axios.get(`${API_BASE}/api/game/init`);
             setGridData(res.data);
         } catch (err) {
             setError(err?.message ?? "request failed");
