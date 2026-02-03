@@ -22,10 +22,10 @@ function Designer(){
     },[])
 
     return (
-        <>
+        <div className='outline-1 outline-neutral-300 rounded-md overflow-auto'>
             {error && <div className = "text-warning-600">Error: {error}</div>}
             {!gridData ? (
-                <div>Loading...</div>): (
+                <div>Loading...</div>) : (
                     <div className='text-neutral-800 p-4'>
                         {gridData.grid.map((row, rowId) => (
                             <div key={rowId} className='flex'>
@@ -39,7 +39,7 @@ function Designer(){
                     </div>
                 )
             }
-        </>
+        </div>
     )
 }
 
