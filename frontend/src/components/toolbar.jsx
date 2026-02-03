@@ -30,7 +30,7 @@ export default function Toolbar(){
                 {
                     toolItems.Tools.map(
                         (tool) => (
-                            <Button id={tool.id} className="flex text-xl h-20 w-full justify-start pl-10">{tool.name}</Button>
+                            <Button id={tool.id} className="text-xl h-20 w-full justify-start pl-10">{tool.name}</Button>
                         )
                     )
                 }
