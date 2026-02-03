@@ -54,3 +54,22 @@ This is entended for backend dev. Follow the steps below to sync your local envi
 
 							- Port in Use: 
 								if the server fails to start, make sure you don't have another instance of app.py running in a different terminal
+
+##------------------// WORKFLOW FOR INTEGRATION BETWEEN *FRONTEND & BACKEND* PER SEQUENCE BELOW:
+
+				1.	User selects “</game/layout> on the Vercel frontend
+				2.	FRONTEND sends ‘ GET /api/game/init?game_type=standard ‘ to Flask Backend
+				3.	BACKEND triggers the logic in ‘ initialize_game() ‘ function
+				4.	BACKEND calls ‘ generate_grid(20, 20) ‘  // or the grid its calling
+				5.	BACKEND returns JSON object (400 cells + metadata) to the FRONTEND / or grid info for size.
+				6.	FRONTEND maps the JSON array to a 20 x 20 CSS Grid and renders the board.
+
+##------------------------------------------------/END OF INTEGRATION WORKFLOW/---------------------------------------------------------------##
+
+##--------------------// DEFINITION OF DONE:
+
+					1. BACKEND: can serve a 20x20 grid <= 400 cells via JSON dynamically
+					2. Grid is generated dynamically via helper functions.
+					3. Different game modes can be triggered via URL parameters outlined in the "triggers" blocks of code
+
+##--------------------------------------------------/ END OF DEFINITION OF DONE /-----------------------------------------------------------------##

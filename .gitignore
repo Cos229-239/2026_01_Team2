@@ -214,6 +214,9 @@ build/
 *.apk
 *.aab
 
+# Android local SDK config (machine-specific)
+local.properties
+
 ###############################################################################
 # FIREBASE (CONFIG + SECRETS)
 #
@@ -397,6 +400,11 @@ firestore-debug.log
 !README.md
 !docs/**
 !.github/workflows/*.yml
-b a c k e n d / 
- 
- 
+.vs/2026_01_Team2.slnx/FileContentIndex/45790bc0-b286-45a5-a985-6ba91b29e3e6.vsidx
+.vs/2026_01_Team2.slnx/FileContentIndex/45790bc0-b286-45a5-a985-6ba91b29e3e6.vsidx
+/.vs
+.vs/2026_01_Team2.slnx/FileContentIndex/45790bc0-b286-45a5-a985-6ba91b29e3e6.vsidx
+.vs/2026_01_Team2.slnx/FileContentIndex/a3e9d866-ca1d-40cd-900c-45253b74c748.vsidx
+.vs/2026_01_Team2.slnx/FileContentIndex/e061c082-dad5-4581-8ea4-22aa818ea5aa.vsidx
+/.vs/2026_01_Team2.slnx
+/.vs/2026_01_Team2.slnx/FileContentIndex

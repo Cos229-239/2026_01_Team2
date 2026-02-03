@@ -1,36 +1,29 @@
-import { useEffect } from 'react'
-import axios from "axios";
+import { useState } from 'react'
 import Sidebar from './components/sidebar';
-import Header from './components/header';
-import Footer from './components/footer';
-import FAQ from './components/faq';
-import Hero from './components/hero';
-import {
-    Button,
-    Card,
-    CardHeader,
-    CardBody,
-    Divider,
-    Input,
-    Image
-} from "@heroui/react";
+import Designer from './components/designer';
+import Toolbar from './components/toolbar';
+import PageHeader from './components/pageHeader';
 
+//will be deprecated later on once there is additional games added
+const gameInfo = {
+  "gameName":"Clash of Clans",
+  "path": "Clash Of Clans"
+}
+
+
+function GetPath({currentPage, path}){
+  return(
+    `${currentPage} / ${path}`
+  )
+}
 
 function App() {
-  //example get response from the backend of flask
-  const fetchAPI = async () => {
-    const response = await axios.get("http://localhost:5000/map");
-    console.log(response.data);
-  }
-  //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
-  useEffect (() => {
-    fetchAPI()
-  },[])
-  // nothing is returned at the moment but will be populated after gathering the information
+  const [ currentPage, setPage ] = useState("designer");
+
+
   return (
     <>
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
-      <Header />
         <div className='grid grid-flow-col grid-cols-12 gap-4'> {/*top layer*/}
           <div className='col-span-2'> {/* Will be moved into the child component */}
             <Sidebar />
@@ -38,9 +31,7 @@ function App() {
           <div className='flex col-span-10 row-span-1'>
             <div className='w-full'> {/* keep this within the parent for all contnt */}
               <h1 className='text-2xl'>This React Page is Working</h1>
-              <Hero />
             </div>
-            <FAQ />
           </div>
         </div>
         <Footer />
