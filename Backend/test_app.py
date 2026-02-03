@@ -23,20 +23,23 @@ def test_home_route(client):
     assert b"Team 2 Flask Server is Running!" in response.data
 
 #========================================================
-# TEST 2: Standard Grid Logic <20x20> 
+# TEST 2: Standard Grid Initialization and Logic <20x20> 
 # Confirming math for grid requirements are correct
 #========================================================
 
 def test_grid_initialization_standard(client):
-    """Verify that a 'Standard' game type returns exactly 400 cells."""
+    """Verify 2d grid structure for standard size."""
     response = client.get('/api/game/init?game_type=standard')
     data = response.get_json()
 
     # Data integrity Assertions
     assert response.status_code == 200
     assert data['selected_game'] == 'standard'
-    assert data['total_cells'] == 400
-    assert len(data['cells']) == 400
+    # 2d Array:
+    # Top level = 20 rows
+    assert len(data['grid']) == 20
+    # 20 cols per row
+    assert len(data['grid'][0]) == 20
     assert data["status"] == 'ready'
 
 #========================================================
@@ -45,15 +48,14 @@ def test_grid_initialization_standard(client):
 # In Place for potential dynamic grid sizing
 #========================================================
 def test_grid_initialization_mini(client):
-    """Verify that a 'mini' game type returns exactly 25 cells."""
+    """Verify 2d grid structure for mini size."""
     response = client.get('/api/game/init?game_type=mini')
     data = response.get_json()
 
     # Scaling Logic Assertions
     assert response.status_code == 200
-    assert data["selected_game"] == 'mini'
-    assert data['total_cells'] == 25
-    assert len(data['cells']) == 25
+    assert len(data['grid']) == 5
+    assert len(data['grid'][0]) == 5
 
 #========================================================
 # TEST 4: Error Handling

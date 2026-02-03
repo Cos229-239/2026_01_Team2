@@ -1,8 +1,13 @@
-from flask                          import Flask, jsonify, request
+from operator import imatmul
+import os
+from flask                          import Flask, jsonify, request, send_from_directory
 from flask_cors                 import CORS                                     # For cross origin resource sharing with frontend
 from flask_sqlalchemy     import SQLAlchemy                        # For database management
 from flask_restful              import Api                                        # For api design
-from flask_talisman          import Talisman                               #Security extensions
+from flask_talisman          import Talisman
+from sqlalchemy.orm.base import PASSIVE_NO_FETCH
+from sqlalchemy.types import Concatenable
+from werkzeug.utils import _filename_ascii_strip_re                               #Security extensions
 
 app = Flask(__name__)
 # CORS initialization enables Cors for all routes
@@ -14,29 +19,70 @@ CORS(app)
 #this-> allows us to keep testing locally on the http://127.0.0.1 ip "addy"
 Talisman(app, force_https=False)
 
-# DATA CONFIG:
-#Creating local SQLite file name: 'database.db' 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+# --- DATA CONFIG ---
+# Logic: Use Render's Database if available, otherwise fallback to local SQLite file
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
+
+# Fix for Render's Postgres URL format (postgres:// -> postgresql://)
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)                    #database initialization
+# Database initialization
+db = SQLAlchemy(app) 
+#db file creation and force placement to bypass need for 'class' 
+with app.app_context():
+    db.create_all()
 
 #this-> allows class based routing
 api = Api(app)                  # RESTful API wrapper Initialization
 
-# Bridge point to Phase 7 card: Logic Implementation
-# Helper for Phase 7
-# replace "empty" types with actual game assests/rules.
+
+#------ ASSET SERVING ROUTES-------/
+# Replace "empty" types with actual game assests/rules.
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    """Serves files from the assets directory and its subfolder"""
+    return send_from_directory(ASSETS_DIR, filename)
+
+@app.route('/api/assets')
+def get_asset_manifest():
+    """Scans subFolders and returns a categorized list of images"""
+    manifest = {}
+    try:
+        if not os.path.exists(ASSETS_DIR):
+            return jsonify({"assets": {}, "message": "Assets folder missing"}), 200
+
+        # Iterate through subFolders for category's images
+        for category in os.listdir(ASSETS_DIR):
+            cat_path = os.path.join(ASSETS_DIR, category)
+            if os.path.isdir(cat_path):
+                # flitering for image files
+                images = [f for f in os.listdir(cat_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+                if images:
+                    manifest[category] = images
+        return jsonify({"assets": manifest})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
+
+# ----- Grid Logic----------/
 def generate_grid(rows, cols):
     grid = []
     for r in range(rows):
+        row_data = []                           #This->creates a new list for the current row
         for c in range(cols):
-            grid.append({
+            row_data.append({
                 "x": c,
                 "y": r,
                 "type": "empty",
-                "id": f"cell_{c}_{r}"            #Unique ID for react key
+                "id": f"cell_{c}_{r}"               #Unique ID for react key
             })
+        grid.append(row_data)     #This->Appends each completed row to the grid
     return grid
 
 ### INTEGRATION PLANNING
@@ -53,23 +99,24 @@ def initialize_game():
     game_type = request.args.get('game_type', 'standard')
     # Dynamic Generation <= 400 cells
     if game_type == 'mini':
-        rows = 5
-        cols = 5
+        rows, cols  = 5, 5
+        
     elif game_type == 'standard':
-        rows = 20
-        cols = 20
+        rows, cols  = 20, 20
+        
     else:
         # If a pick and not in databased
         return jsonify({"error": "Unknown game type"}), 400
     
     # Helper call for grid gen
-    cells = generate_grid(rows, cols)
+    grid_data  = generate_grid(rows, cols)
 
     return jsonify({
         "selected_game": game_type,
         "grid_size": f"{rows}x{cols}",
-        "total_cells": len(cells),
-        "cells": cells,
+        "rows": rows,
+        "cols": cols,
+        "grid": grid_data,                  #This-> is the 2d array return   
         "status": "ready"
 })
 
