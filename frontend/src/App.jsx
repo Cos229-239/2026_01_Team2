@@ -11,7 +11,7 @@ const gameInfo = {
 }
 
 
-function GetPath({currentPage, path}){
+function GetPath(currentPage, path){
   return(
     `${currentPage} / ${path}`
   )

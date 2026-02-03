@@ -34,7 +34,7 @@ export default function Sidebar( { onSelect, selectedPage }){
           {pages.map((page) => (
               <div key={page.id} className={
                 `$(
-                  selectedPage == page.id ?
+                  ${selectedPage == page.id} ?
                   'hover:bg-neutral-500 bg-neutral-400':
                   'hover:bg-neutral-300 bg-neutral-300'
                   ) text-xl`} >
