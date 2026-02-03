@@ -11,11 +11,19 @@ function Designer(){
         const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
         try {
+            // Updated to use dynamic API_BASE
             const res = await axios.get(`${API_BASE}/api/game/init`);
             setGridData(res.data);
-        } catch (err) {
-            setError(err?.message ?? "request failed");
-            console.error(err);
+            
+            // --- DEMO LOG: SUCCESS ---
+            console.log("✅ Designer: Cloud Connection Verified!", res.data);
+        } 
+        catch (err) {
+            const errorMessage = err?.message ?? "request failed";
+            setError(errorMessage);
+            
+            // --- DEMO LOG: ERROR ---
+            console.error("❌ Designer: Cloud Connection Failed:", err);
         }
     };
     //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
