@@ -31,8 +31,11 @@ function App() {
           <Sidebar onSelect={setPage} selectedPage={currPage} />
           <div className='flex flex-col h-screen w-full p-16'>
               {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
-              <PageHeader gameName={gameInfo.gameName} path={GetPath(currPage, gameInfo.path)} />
-            <Designer />
+              <PageHeader 
+                gameName={gameInfo.gameName} 
+                path={GetPath(currPage, gameInfo.path)} 
+                />
+            <Designer brushSize={brushSize}/>
           </div>
             
             <Toolbar 
