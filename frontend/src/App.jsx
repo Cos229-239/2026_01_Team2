@@ -19,6 +19,9 @@ function GetPath(currentPage, path){
 
 function App() {
   const [ currPage, setPage ] = useState("designer");
+  const [ activeTool, setActiveTool ] = useState('select');
+  const [ brushSize, setBrushSize ] = useState(1);
+  const [ toolbarMode, setToolbarMode ] = useState("main");
 
 
   return (
@@ -32,7 +35,16 @@ function App() {
             <Designer />
           </div>
             
-            <Toolbar />
+            <Toolbar 
+              activeTool = {activeTool}
+              brushSize = {brushSize}
+              toolbarMode = {toolbarMode}
+              onSelectTool ={(tool)=> {
+                setActiveTool(tool);
+                setToolbarMode(tool ==="select" ? "select" : "main");}}
+                onSelectBrushSize={(size) =>setBrushSize(size)}
+                onBack={()=>setToolbarMode("main")}
+                />
 
         </div>
       </main>

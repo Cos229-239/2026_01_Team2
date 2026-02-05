@@ -25,12 +25,12 @@ export default function Toolbar(){
 
     return (
         <div className='place-content-center'>
-        <div className="h-fit w-sm bg-neutral-300 rounded-bl-md rounded-tl-md pt-4 pb-4 place-content-center">
+        <div className="h-fit w-fit bg-neutral-300 rounded-bl-md rounded-tl-md pt-4 pb-4 place-content-center">
             <div>
                 {
                     toolItems.Tools.map(
                         (tool) => (
-                            <Button id={tool.id} className="text-xl h-20 w-full justify-start pl-10">{tool.name}</Button>
+                            <Button id={tool.id} className="text-xl h-20 w-full justify-start">{tool.name}</Button>
                         )
                     )
                 }
