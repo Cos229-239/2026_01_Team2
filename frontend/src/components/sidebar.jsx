@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from "@heroui/react";
-import collapse from '../assets/sidebar-collapse.svg';
-import brand from '../assets/brand.svg';
-import brush from '../assets/sidebar-Pencil-Brush.svg';
-import paper from '../assets/sidebar-Pencil-Paper.svg';
+//import collapse from '../assets/sidebar-collapse.svg';
+//import brand from '../assets/brand.svg';
+//import brush from '../assets/sidebar-Pencil-Brush.svg';
+//import paper from '../assets/sidebar-Pencil-Paper.svg';
 
 export default function Sidebar(){
     const pages = [
@@ -20,10 +20,6 @@ export default function Sidebar(){
     "id":2
   }
 ];
-export default function Sidebar() {
-        const [toggleSidebar, setToggleSidebar] = useState(false);
-
-export default function Sidebar(){
   const [toggleSidebar , setToggleSidebar] = useState(false);
   
   const toggleNav = ()=>{
@@ -45,4 +41,4 @@ export default function Sidebar(){
       </nav>
     </div>
     )
-}
+};
