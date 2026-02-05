@@ -26,8 +26,6 @@ function Designer({brushSize}){
         fetchAPI();
     },[])
     
-    const radius = Math.floor(brushSize/2);
-    
     
     const highlightedIds = useMemo(()=> {
         if (!gridData || !hovered) return new Set();
@@ -79,7 +77,7 @@ function Designer({brushSize}){
         {!gridData ? (
             <div>Loading...</div>
         ): (
-            <div className='text-neutral-800 p-4' onMouseLeave={()=>setHovered(null)}>
+            <div className='text-neutral-800 p-1' onMouseLeave={()=>setHovered(null)}>
             {gridData.grid.map((row)=>(
                 <div key={`row_${row[0]?.y ?? Math.random()}}`} className='flex'>
                     {row.map((cell) => {
@@ -90,9 +88,10 @@ function Designer({brushSize}){
                                 onMouseEnter={()=>setHovered({ x:cell.x, y:cell.y})}
                                 onMouseLeave={()=>setHovered(null)}
                                 className={[
-                                    "p-1 border select-none",
-                                    isHighlighted? "bg-neutral-400 border-brand-400": ""
+                                    "p-2  border border-neutral-300 select-none",
+                                    isHighlighted? "bg-neutral-300 border-brand-400": "", 
                                 ].join(" ")}
+                                
                             >
                                 {cell.type}
                             </div>

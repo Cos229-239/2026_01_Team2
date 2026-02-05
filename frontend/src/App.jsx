@@ -22,6 +22,7 @@ function App() {
   const [ activeTool, setActiveTool ] = useState('select');
   const [ brushSize, setBrushSize ] = useState(1);
   const [ toolbarMode, setToolbarMode ] = useState("main");
+  const [ selectedCell, setSelectedCell ] = useState(false);
 
 
   return (
@@ -29,7 +30,7 @@ function App() {
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
         <div className='flex'> {/*top layer*/}
           <Sidebar onSelect={setPage} selectedPage={currPage} />
-          <div className='flex flex-col h-screen w-full p-16'>
+          <div className='flex flex-col h-screen w-full p-16 place-content-center'>
               {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
               <PageHeader 
                 gameName={gameInfo.gameName} 
@@ -38,15 +39,9 @@ function App() {
             <Designer brushSize={brushSize}/>
           </div>
             
-            <Toolbar 
-              activeTool = {activeTool}
-              brushSize = {brushSize}
+            <Toolbar
               toolbarMode = {toolbarMode}
-              onSelectTool ={(tool)=> {
-                setActiveTool(tool);
-                setToolbarMode(tool ==="select" ? "select" : "main");}}
-                onSelectBrushSize={(size) =>setBrushSize(size)}
-                onBack={()=>setToolbarMode("main")}
+              setToolbarMode = {setToolbarMode}
                 />
 
         </div>
