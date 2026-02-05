@@ -9,15 +9,18 @@ export default function Sidebar( { onSelect, selectedPage }){
     const pages = [
   {
     "name":"Home",
-    "id":0
+    "id":0,
+    "asset":brush,
   },
   {
     "name":"Layout",
-    "id":1
+    "id":1,
+    "asset":paper,
   },
   {
     "name":"About",
-    "id":2
+    "id":2,
+    "asset": brand, //placeholder
   }
 ];
 
@@ -33,11 +36,12 @@ export default function Sidebar( { onSelect, selectedPage }){
           </div>
           {pages.map((page) => (
               <div key={page.id} className={
-                `$(
+                `flex pl-2 $(
                   ${selectedPage == page.id} ?
                   'hover:bg-neutral-500 bg-neutral-400':
                   'hover:bg-neutral-300 bg-neutral-300'
                   ) text-xl`} >
+                <img width='24' src={page.asset} alt ={page.name} />
                 <Button 
                   onSelect={ ()=> onSelect(page.name)} className='px-8 justify-start py-8 h-full w-full text-neutral-800' 
                   radius="md">

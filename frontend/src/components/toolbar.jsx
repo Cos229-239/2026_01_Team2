@@ -25,7 +25,7 @@ export default function Toolbar(){
 
     return (
         <div className='place-content-center'>
-        <div className="h-11/12 w-sm bg-neutral-300 rounded-bl-md rounded-tl-md pt-4 pb-4 place-content-center">
+        <div className="h-fit w-sm bg-neutral-300 rounded-bl-md rounded-tl-md pt-4 pb-4 place-content-center">
             <div>
                 {
                     toolItems.Tools.map(
