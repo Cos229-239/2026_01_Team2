@@ -6,7 +6,7 @@ import {
     NavbarItem,
 } from "@heroui/react"
 
-export default function Toolbar({toolbarMode, setToolbarMode}){
+export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
     const toolItems = {
         "Tools":[
             {"id":0, "name":"Select", "toolName":"select"},
@@ -21,9 +21,9 @@ export default function Toolbar({toolbarMode, setToolbarMode}){
             "Structures"
         ],
         "Select":[
-            {"id":0, "name": "1x1", },
-            {"id":1, "name": "2x2", },
-            {"id":2, "name": "3x3", },
+            {"id":0, "name": "1x1", "brushSize": 1 },
+            {"id":1, "name": "2x2", "brushSize": 2 },
+            {"id":2, "name": "3x3", "brushSize": 3 },
             
         ]
 
@@ -62,7 +62,8 @@ export default function Toolbar({toolbarMode, setToolbarMode}){
                             (tool) => (
                                 <Button 
                                 id={tool.id} 
-                                className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start" 
+                                className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start"
+                                onClick={()=>{setBrushSize(tool.brushSize)}}
                                 >
                                         {tool.name}
                                 </Button>

@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import axios from "axios";
 
 
-function Designer({brushSize}){
+function Designer({brushSize,}){
     const [ gridData, setGridData ] = useState(null);
     const [ error, setError ] = useState(null);
 
@@ -90,7 +90,9 @@ function Designer({brushSize}){
                                 className={[
                                     "p-2  border border-neutral-300 select-none",
                                     isHighlighted? "bg-neutral-300 border-brand-400": "", 
-                                ].join(" ")}
+                                ].join(" ")
+                                
+                            }
                                 
                             >
                                 {cell.type}
