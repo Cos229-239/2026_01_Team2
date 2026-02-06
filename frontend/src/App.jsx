@@ -26,9 +26,9 @@ function App() {
   return (
     <>
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
-        <div className='flex'> {/*top layer*/}
+        <div className='grid grid-flow-col grid-cols-12 gap-4'> {/*top layer*/}
           <div className='col-span-2'> {/* Will be moved into the child component */}
-            <Sidebar onSelect={setPage} selectedPage={currentPage} />
+            <Sidebar />
           </div>
           <div className='flex flex-col h-screen w-full p-16'>
             <div> {/* keep this within the parent for all contnt */}
@@ -44,6 +44,7 @@ function App() {
             </div>
 
         </div>
+        {/*<Footer />*/}
       </main>
     </>
   )

@@ -1,18 +1,18 @@
+import { useState } from 'react';
 import { Button } from "@heroui/react";
-import collapse from '../assets/sidebar-collapse.svg';
-import brand from '../assets/brand.svg';
-import brush from '../assets/sidebar-Pencil-Brush.svg';
-import paper from '../assets/sidebar-Pencil-Paper.svg';
+//import collapse from '../assets/sidebar-collapse.svg';
+//import brand from '../assets/brand.svg';
+//import brush from '../assets/sidebar-Pencil-Brush.svg';
+//import paper from '../assets/sidebar-Pencil-Paper.svg';
 
-
-export default function Sidebar( { onSelect, selectedPage }){
+export default function Sidebar(){
     const pages = [
   {
     "name":"Home",
     "id":0
   },
   {
-    "name":"Layout",
+    "name":"Tool",
     "id":1
   },
   {
@@ -20,32 +20,25 @@ export default function Sidebar( { onSelect, selectedPage }){
     "id":2
   }
 ];
+  const [toggleSidebar , setToggleSidebar] = useState(false);
+  
+  const toggleNav = ()=>{
+    setToggleSidebar(!toggleSidebar)
+  }
 
     return (
-      
-    <div className='w-2xs h-screen'>
-        <nav className='h-full bg-neutral-200'>
-          <div className="flex justify-between p-8 content-center">
-              <img width='36' src={brand} alt='brand' />
-              <Button className=" hover:bg-neutral-300 rounded-md">
-                <img width='24'  src={collapse} alt='collapse' /> {/* TODO: Add Collapsability interaction to the button . Add in hover capability*/}
-              </Button>
-          </div>
-          {pages.map((page) => (
-              <div key={page.id} className={
-                `$(
-                  selectedPage == page.id ?
-                  'hover:bg-neutral-500 bg-neutral-400':
-                  'hover:bg-neutral-300 bg-neutral-300'
-                  ) text-xl`} >
-                <Button 
-                  onSelect={ ()=> onSelect(page.name)} className='px-8 justify-start py-8 h-full w-full text-neutral-800' 
-                  radius="md">
-                    {page.name}
-                </Button>
-              </div>
-          ))}
-        </nav>
+    <div className='h-screen bg-neutral-500'>
+      <div className={`${toggleSidebar? '': 'justify-between'} flex py-2 px-4 align-center`}>
+        <h2 className={`content-center ${toggleSidebar?'text-2xl p-2':'text-4xl'} text-neutral-800`}>MyHQ</h2>
+        <div className='rounded-md p-4 bg-neutral-400 hover:bg-neutral-200 hover:cursor-pointer' onClick={toggleNav}>{toggleSidebar? "Open": "Close"}</div>
       </div>
+      <nav>
+        {pages.map((page) => (
+            <div key={page.id} className='text-lg p-5'>
+              <Button color="primary" radius="md">{page.name}</Button>
+            </div>
+        ))}
+      </nav>
+    </div>
     )
-}
+};
