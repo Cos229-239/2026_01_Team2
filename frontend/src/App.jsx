@@ -18,7 +18,9 @@ function GetPath({currentPage, path}){
 }
 
 function App() {
-  const [ currentPage, setPage ] = useState("designer");
+    const [currentPage, setPage] = useState("designer");
+    const [toolbarMode, setToolbarMode] = useState("main");
+    const [brushSize, setBrushSize] = useState(1);
 
 
   return (
@@ -30,15 +32,15 @@ function App() {
           </div>
           <div className='flex flex-col h-screen w-full p-16'>
             <div> {/* keep this within the parent for all contnt */}
-              {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
-              <PageHeader gameName={gameInfo.gameName} path={GetPath(currentPage, gameInfo.path)} />
+                          {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
+                          <PageHeader gameName={gameInfo.gameName} path={`${currentPage} / ${gameInfo.path}`} />
             </div>
             <div className='outline-1 outline-neutral-300 rounded-md overflow-auto'>
-              <Designer />
+                          <Designer brushSize={brushSize} activeTool={toolbarMode} />
             </div>
           </div>
-            <div className='place-content-center'>
-              <Toolbar />
+                  <div className='place-content-center'>
+                      <Toolbar toolbarMode={toolbarMode} setToolbarMode={setToolbarMode} setBrushSize={setBrushSize} />
             </div>
 
         </div>
