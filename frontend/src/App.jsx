@@ -22,7 +22,7 @@ function App() {
   const [ activeTool, setActiveTool ] = useState('select');
   const [ brushSize, setBrushSize ] = useState(1);
   const [ toolbarMode, setToolbarMode ] = useState("main");
-  const [ selectedCell, setSelectedCell ] = useState({});
+  const [ selectedCell, setSelectedCell ] = useState([]);
 
 
   return (
