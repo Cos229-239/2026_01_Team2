@@ -5,11 +5,7 @@ import axios from "axios";
 function Designer({brushSize, selectedCell, setSelectedCell}){
     const [ gridData, setGridData ] = useState(null);
     const [ error, setError ] = useState(null);
-
     const [hovered, setHovered] = useState(null);
-
-    
-    
     
     //example get response from the backend of flask
     const fetchAPI = async () => {
@@ -21,9 +17,17 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
             console.error(err);
         }
     };
+
+    const initializeData = async () =>{
+        const saved = localStorage.getItem('grid_save');
+        if (saved) setGridData(JSON.parse(saved));
+        else await fetchAPI();
+    }
+    
     //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
     useEffect (() => {
-        fetchAPI();
+        initializeData();
+        if (gridData) localStorage.setItem('grid_save', JSON.stringify(gridData));
     },[])
     
     
@@ -71,15 +75,26 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
         return set;
     }, [gridData, hovered, brushSize]);
     
+    const placeTile = () => {
+        if (!gridData || !hovered || highlightedIds.size === 0) return;
+        const updateGrid = gridData.grid.map(row =>
+            row.map(cell=>{
+                if (highlightedIds.has(cell.id)) return {...cell, type: "selected"};
+                return cell;
+            })
+        );
+        setGridData({...gridData, grid: updateGrid});
+    }
+
     return(
         <>
         {error && <div className="text-warning-600"> Error: {error}</div>}
         {!gridData ? (
             <div>Loading...</div>
         ): (
-            <div className='text-neutral-800 p-1 overflow-x-auto ' onMouseLeave={()=>setHovered(null)}>
-            {gridData.grid.map((row)=>(
-                <div key={`row_${row[0]?.y ?? Math.random()}}`} className='flex'>
+            <div className='h-full w-full text-neutral-800 p-1' onMouseLeave={()=>setHovered(null)}>
+            {gridData.grid.map((row, rowIndex)=>(
+                <div key={rowIndex} className='flex'>
                     {row.map((cell) => {
                         const isHighlighted = highlightedIds.has(cell.id);
                         return(
@@ -87,13 +102,15 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
                                 key = {cell.id}
                                 onMouseEnter={()=>setHovered({ x:cell.x, y:cell.y})}
                                 onMouseLeave={()=>setHovered(null)}
+                                onMouseDown={placeTile}
                                 className={[
-                                    "p-2  border border-neutral-400 select-none",
-                                    isHighlighted? "bg-neutral-300 border-brand-400": "", 
+                                    "pt-3 pb-3 text-center text-sm w-full border border-neutral-400 select-none",
+                                    isHighlighted && "bg-neutral-300 border-brand-400", 
                                 ].join(" ")
                                 
                             }
-                                
+
+
                             >
                                 {cell.type}
                             </div>

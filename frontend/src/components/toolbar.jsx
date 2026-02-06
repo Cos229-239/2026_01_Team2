@@ -63,7 +63,7 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
                                 <Button 
                                 id={tool.id} 
                                 className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start"
-                                onClick={()=>{setBrushSize(tool.brushSize)}}
+                                onClick={()=>setBrushSize(tool.brushSize)}
                                 >
                                         {tool.name}
                                 </Button>
