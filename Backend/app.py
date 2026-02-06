@@ -1,5 +1,7 @@
 from operator import imatmul
 import os
+import json                                                             # Handler for JSON strin conversion for the db
+from datetime                  import datetime         # Timestamping saves for retreival            
 from flask                          import Flask, jsonify, request, send_from_directory
 from flask_cors                 import CORS                                     # For cross origin resource sharing with frontend
 from flask_sqlalchemy     import SQLAlchemy                        # For database management
@@ -30,13 +32,24 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
 # Database initialization
 db = SQLAlchemy(app) 
-#db file creation and force placement to bypass need for 'class' 
+# ------ SAVE/LOAD SCHEMA ------/
+# Defining GameMap class to generate table
+class GameMap(db.Model):
+    __tablename__ = 'game_map'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    # Text type to store string type JSON grid
+    grid_data = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, defualt=datetime.utcnow)        # will use user's system time in future for native stamps
+
+    def __repr__(self):
+        return f'<GameMap {self.name}>'
+#db file creation  ensuring registration of GameMap
 with app.app_context():
     db.create_all()
 
 #this-> allows class based routing
 api = Api(app)                  # RESTful API wrapper Initialization
-
 
 #------ ASSET SERVING ROUTES-------/
 # Replace "empty" types with actual game assests/rules.
@@ -64,9 +77,6 @@ def get_asset_manifest():
         return jsonify({"assets": manifest})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
-
 
 # ----- Grid Logic----------/
 def generate_grid(rows, cols):
@@ -118,13 +128,47 @@ def initialize_game():
         "status": "ready"
 })
 
+# ------- SAVE ENDPOINT------/
+@app.route('/api/game/save', methods=['POST'])
+def save_game_map():
+    """Recieves grid and name from frontend and saves to database as JSON string"""
+    try:
+        data = request.get_json()
+
+        # Validation: Ensuring name and gird exist in payload
+        # Checks for name and grid to prevent empty saves
+        if not data or 'name' not in data or 'grid' not in data:
+            return jsonify({"status": "error", "message": "Missing map name or grid data"}), 400
+
+        map_name = data['name']
+        grid_array = data["grid"]
+
+        #Serialization: Converting the Py list 'grid' into JSON string for the db
+        stringified_grid = json.dumps(grid_array)
+
+        # Creating new database recording
+        new_map = GameMap(
+            name=map_name, grid_data=stringified_grid
+        )
+
+        db.session.add(new_map)
+        db.session.commit()
+
+        return jsonify({
+            "status": "success",
+            "message": f"Map '{map_name}' saved sucessfully",
+            "map_id": new_map.id
+            }), 201
+    except Exception as e:                      # <-----This error rollback protection
+        db.session.rollback()                      # against db integrity failure
+        return jsonify({"status": "error", "message": str(e)}), 500
+    # Test above SAVE ENDPOINT pasing JSON via POST request to: http://127.0.0.1:5000/api/game/save
+
 
 # Home routing for general verification
 @app.route('/')
 def home():
     return "Team 2 Flask Server is Running!"
-
-
 
 # API Dynamic API Endpoint             ---------------------->use: http://127.0.0.1:5000/api/test
 # Returns JSON, how we will be communicating with the frontend
@@ -168,8 +212,6 @@ def not_found(error):
         "message": "Endpoint not found. Check your URL structure.", 
         "error_details": str(error)
         }), 404
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
