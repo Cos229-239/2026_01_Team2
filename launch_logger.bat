@@ -33,9 +33,13 @@ if not exist "tools\api_logger.exe" (
 echo [SUCCESS] Logger found. Launching environment...
 
 :: 2. Launch Windows Terminal with 3 Panes
-:: We use 'start /wait' to ensure the script doesn't close immediately if wt fails
-wt -w 0 nt --title "Flask Backend (5000)" -d "%~dp0Backend" cmd /k "call ..\.venv\Scripts\activate && if exist requirements.txt (pip install -r requirements.txt) && python app.py" ; ^
-   sp -V --title "API Logger (5001)" -d "%~dp0tools" cmd /k "api_logger.exe" ; ^
+:: Layout:
+:: |        |  Flask   |
+:: | Logger |----------|
+:: |        | React FE |
+
+wt -w 0 nt --title "API Logger (5001)" -d "%~dp0tools" cmd /k "api_logger.exe" ; ^
+   sp -V --title "Flask Backend (5000)" -d "%~dp0Backend" cmd /k "call ..\.venv\Scripts\activate && if exist requirements.txt (pip install -r requirements.txt) && python app.py" ; ^
    sp -H --title "React Frontend" -d "%~dp0frontend" cmd /k "call npm install && npm run dev"
 
 if %ERRORLEVEL% NEQ 0 (
