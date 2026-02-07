@@ -40,7 +40,7 @@ class GameMap(db.Model):
     name = db.Column(db.String(100), nullable=False)
     # Text type to store string type JSON grid
     grid_data = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, defualt=datetime.utcnow)        # will use user's system time in future for native stamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)        # will use user's system time in future for native stamps
 
     def __repr__(self):
         return f'<GameMap {self.name}>'
@@ -162,8 +162,38 @@ def save_game_map():
     except Exception as e:                      # <-----This error rollback protection
         db.session.rollback()                      # against db integrity failure
         return jsonify({"status": "error", "message": str(e)}), 500
-    # Test above SAVE ENDPOINT pasing JSON via POST request to: http://127.0.0.1:5000/api/game/save
+# Test above SAVE ENDPOINT pasing JSON via POST request to: http://127.0.0.1:5000/api/game/save
+#------ LOAD ENDPOINTS------#
+# Routing Lets the frontend dev create a "Load Menu" by showing all map names in db
+@app.route('/api/game/maps', methods=['GET'])
+def list_maps():
+    """Returns a list of all saved map names and IDs"""
+    try:
+        maps = GameMap.query.all()
+        map_list = [{"id": m.id, "name": m.name, "created_at": m.created.at} for m in maps]
+        return jsonify({"status": "sucess", "maps": map_list})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
+    # Routing to take in specific ID's, find record, converts text back into JSON list for FrontEnd
+@app.route('/api/game/load/<int:map_id>', methods=['GET'])
+def load_game_map(map_id):
+    """Retrieves a specific map and converts the string grid back to a list"""
+    try:
+        game_map = GameMap.query.get(map_id)
+        if not game_map:
+            return jsonify({"status": "error", "message": "Map not found"}), 404
+
+        # Converting string from the db back into a JSON list
+        parsed_grid = json.loads(game_map.grid_data)
+
+        return jsonify({
+            "status": "sucess",
+            "name": game_map.name,
+            "grid": parsed_grid
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 # Home routing for general verification
 @app.route('/')
@@ -203,7 +233,7 @@ def get_game_data(name):
         })
 
 # Error Handling
-# Insurance: frontend always receives JSON even on a 404 erro message
+# Insurance: frontend always receives JSON even on a 404 error message
 # with anything after http://127.0.0.1:5000 for example: http://127.0.0.1:5000/this_is-notReal
 @app.errorhandler(404)
 def not_found(error):
