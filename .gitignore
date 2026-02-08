@@ -408,3 +408,7 @@ firestore-debug.log
 .vs/2026_01_Team2.slnx/FileContentIndex/e061c082-dad5-4581-8ea4-22aa818ea5aa.vsidx
 /.vs/2026_01_Team2.slnx
 /.vs/2026_01_Team2.slnx/FileContentIndex
+tools/.exe
+tools/.obj
+tools/.pdb
+tools/.ilk
