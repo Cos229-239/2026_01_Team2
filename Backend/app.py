@@ -136,7 +136,7 @@ def save_game_map():
         data = request.get_json()
 
         # Validation: Ensuring name and gird exist in payload
-        # Checks for name and grid to prevent empty saves
+        # Checks for name and grid to prevent empty saves    #<----- this is showing as line 139*****
         if not data or 'name' not in data or 'grid' not in data:
             return jsonify({"status": "error", "message": "Missing map name or grid data"}), 400
 
@@ -156,7 +156,7 @@ def save_game_map():
 
         return jsonify({
             "status": "success",
-            "message": f"Map '{map_name}' saved sucessfully",
+            "message": f"Map '{map_name}' saved successfully",
             "map_id": new_map.id
             }), 201
     except Exception as e:                      # <-----This error rollback protection
@@ -170,8 +170,8 @@ def list_maps():
     """Returns a list of all saved map names and IDs"""
     try:
         maps = GameMap.query.all()
-        map_list = [{"id": m.id, "name": m.name, "created_at": m.created.at} for m in maps]
-        return jsonify({"status": "sucess", "maps": map_list})
+        map_list = [{"id": m.id, "name": m.name, "created_at": m.created_at} for m in maps] #<---- .created_at is fixed line 173
+        return jsonify({"status": "success", "maps": map_list})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
@@ -188,12 +188,54 @@ def load_game_map(map_id):
         parsed_grid = json.loads(game_map.grid_data)
 
         return jsonify({
-            "status": "sucess",
+            "status": "success",
             "name": game_map.name,
             "grid": parsed_grid
         })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+#------ UPDATE AND DELETE LOGIC------/
+# Routing Overwrite/Update
+@app.route('/api/game/update/<int:map_id>', methods=['PUT'])
+def update_game_map(map_id):
+    """Overwrites an existing map's grid data and name"""
+    try:
+        data = request.get_json()
+        game_map = GameMap.query.get(map_id)
+
+        if not game_map:
+            return jsonify({"status": "error", "message": "Map not found"}), 404
+
+        #updating fields if provided in request
+        if 'name' in data:
+            game_map.name = data['name']
+        if 'grid' in data:                                                  #<-------- this is line 213 it shows 'grid' 
+            game_map.grid_data = json.dumps(data['grid'])
+
+        db.session.commit()
+        return jsonify({"status": "success", "message": f"{map_id} updated successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# Routing Permanet Deletion
+@app.route('/api/game/delete/<int:map_id>', methods=['DELETE'])
+def delete_game_map(map_id):
+    """Removes a map from the database permanently"""
+    try:
+        game_map = GameMap.query.get(map_id)
+        if not game_map:
+            return jsonify({"status": "error", "message": "Map not found"}), 404
+
+        db.session.delete(game_map)
+        db.session.commit()
+        return jsonify({"status": "success", "message": f"Map {map_id} deleted successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+      
 
 # Home routing for general verification
 @app.route('/')
