@@ -32,6 +32,9 @@ if database_url and database_url.startswith("postgres://"):
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
+
 # Database initialization
 db = SQLAlchemy(app) 
 # ------ SAVE/LOAD SCHEMA ------/
