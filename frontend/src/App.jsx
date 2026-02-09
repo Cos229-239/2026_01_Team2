@@ -11,14 +11,18 @@ const gameInfo = {
 }
 
 
-function GetPath({currentPage, path}){
+function GetPath(currentPage, path){
   return(
     `${currentPage} / ${path}`
   )
 }
 
 function App() {
-  const [ currentPage, setPage ] = useState("designer");
+  const [ currPage, setPage ] = useState("designer");
+  const [ activeTool, setActiveTool ] = useState('select');
+  const [ brushSize, setBrushSize ] = useState(1);
+  const [ toolbarMode, setToolbarMode ] = useState("main");
+  const [ selectedCell, setSelectedCell ] = useState([]);
 
 
   return (
@@ -31,15 +35,18 @@ function App() {
           <div className='flex flex-col h-screen w-full p-16'>
             <div> {/* keep this within the parent for all contnt */}
               {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
-              <PageHeader gameName={gameInfo.gameName} path={GetPath(currentPage, gameInfo.path)} />
-            </div>
-            <div className='outline-1 outline-neutral-300 rounded-md overflow-auto'>
-              <Designer />
-            </div>
+              <PageHeader 
+                gameName={gameInfo.gameName} 
+                path={GetPath(currPage, gameInfo.path)} 
+                />
+            <Designer brushSize={brushSize}/>
           </div>
-            <div className='place-content-center'>
-              <Toolbar />
-            </div>
+            
+            <Toolbar
+              toolbarMode = {toolbarMode}
+              setToolbarMode = {setToolbarMode}
+              setBrushSize={setBrushSize}
+                />
 
         </div>
       </main>
