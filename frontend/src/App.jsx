@@ -30,7 +30,7 @@ function App() {
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
         <div className='flex'> {/*top layer*/}
           <div className='col-span-2'> {/* Will be moved into the child component */}
-            <Sidebar onSelect={setPage} selectedPage={currentPage} />
+            <Sidebar onSelect={setPage} selectedPage={currPage} />
           </div>
           <div className='flex flex-col h-screen w-full p-16'>
             <div> {/* keep this within the parent for all contnt */}
@@ -40,6 +40,7 @@ function App() {
                 path={GetPath(currPage, gameInfo.path)} 
                 />
             <Designer brushSize={brushSize}/>
+            </div>
           </div>
             
             <Toolbar
