@@ -9,12 +9,22 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
     
     //example get response from the backend of flask
     const fetchAPI = async () => {
+        const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
         try {
-            const res = await axios.get("http://localhost:5000/api/game/init");
+            // Updated to use dynamic API_BASE
+            const res = await axios.get(`${API_BASE}/api/game/init`);
             setGridData(res.data);
-        } catch (err) {
-            setError(err?.message ?? "request failed");
-            console.error(err);
+            
+            // --- DEMO LOG: SUCCESS ---
+            console.log("✅ Designer: Cloud Connection Verified!", res.data);
+        } 
+        catch (err) {
+            const errorMessage = err?.message ?? "request failed";
+            setError(errorMessage);
+            
+            // --- DEMO LOG: ERROR ---
+            console.error("❌ Designer: Cloud Connection Failed:", err);
         }
     };
 
@@ -44,30 +54,23 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
         const { x, y } = hovered;
         const set = new Set();
 
-        if (brushSize == 1){
-            if(inBounds(x,y)) set.add(cellId(x,y));
-
-            return set;
-        }
-        if (brushSize == 2){
-            const offsets =[
-                [0,0], [1,0],
-                [0,1], [1,1],
-            ];
-            for (const [dx, dy] of offsets){
-                const nx = x+dx;
-                const ny = y+dy;
-                if (inBounds(nx, ny)) set.add(cellId(nx,ny));
-            }
-            return set;
-        }
-        if (brushSize == 3){
-            for (let dy = -1; dy <= 1; dy++) {
-                for (let dx = -1; dx <= 1; dx++) {
-                    const nx = x + dx;
-                    const ny = y + dy;
-                    if (inBounds(nx, ny)) set.add(cellId(nx, ny));
-                }
+    return (
+        <>
+            {error && <div className = "text-warning-600">Error: {error}</div>}
+            {!gridData ? (
+                <div>Loading...</div>): (
+                    <div className='text-neutral-800 p-4'>
+                        {gridData.grid.map((row, rowId) => (
+                            <div key={rowId} className='flex'>
+                                {row.map((cell) =>(
+                                    <div key={cell.id} className='p-2 border h-1/20 w-1/20 hover:bg-neutral-400'>
+                                        {cell.type}
+                                        </div>
+                                ))}
+                                </div>
+                        ))}
+                    </div>
+                )
             }
     
             return set;

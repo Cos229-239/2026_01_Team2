@@ -26,7 +26,7 @@ export default function Sidebar( { onSelect, selectedPage }){
 
     return (
       
-    <div className='col-span-2 w-2xs h-screen'>
+    <div className='w-2xs h-screen'>
         <nav className='h-full bg-neutral-200'>
           <div className="flex justify-between pr-12 p-8 content-center">
               <img width='36' src={brand} alt='brand' />

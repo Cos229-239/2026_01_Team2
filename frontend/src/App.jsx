@@ -29,8 +29,11 @@ function App() {
     <>
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
         <div className='flex'> {/*top layer*/}
-          <Sidebar onSelect={setPage} selectedPage={currPage} />
-          <div className='flex flex-col h-screen w-full p-16 place-content-center'>
+          <div className='col-span-2'> {/* Will be moved into the child component */}
+            <Sidebar onSelect={setPage} selectedPage={currentPage} />
+          </div>
+          <div className='flex flex-col h-screen w-full p-16'>
+            <div> {/* keep this within the parent for all contnt */}
               {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
               <PageHeader 
                 gameName={gameInfo.gameName} 
