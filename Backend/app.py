@@ -32,6 +32,7 @@ if database_url and database_url.startswith("postgres://"):
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Path to the 'assets' folder for this script
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
@@ -140,8 +141,8 @@ def save_game_map():
     try:
         data = request.get_json()
 
-        # Validation: Ensuring name and gird exist in payload
-        # Checks for name and grid to prevent empty saves    #<----- this is showing as line 139*****
+        # Validation: Ensuring name and grid exist in payload
+        # Checks for name and grid to prevent empty saves    
         if not data or 'name' not in data or 'grid' not in data:
             return jsonify({"status": "error", "message": "Missing map name or grid data"}), 400
 
@@ -175,7 +176,7 @@ def list_maps():
     """Returns a list of all saved map names and IDs"""
     try:
         maps = GameMap.query.all()
-        map_list = [{"id": m.id, "name": m.name, "created_at": m.created_at} for m in maps] #<---- .created_at is fixed line 173
+        map_list = [{"id": m.id, "name": m.name, "created_at": m.created_at} for m in maps] 
         return jsonify({"status": "success", "maps": map_list})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -215,7 +216,7 @@ def update_game_map(map_id):
         #updating fields if provided in request
         if 'name' in data:
             game_map.name = data['name']
-        if 'grid' in data:                                                  #<-------- this is line 213 it shows 'grid' 
+        if 'grid' in data:                                                
             game_map.grid_data = json.dumps(data['grid'])
 
         db.session.commit()
@@ -240,7 +241,22 @@ def delete_game_map(map_id):
         db.session.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
 
-      
+# Routing Global Deletion
+@app.route('/api/game/delete_all', methods=['DELETE'])
+def delete_all_maps():
+    """Wipes the entire game_map table for environment reset"""
+    try:
+        # SQLAlchemny mass deletion logic
+        num_rows_deleted = db.session.query(GameMap).delete()
+        db.session.commit()
+        return jsonify({
+            "status": "success",
+            "message": f"All {num_rows_deleted} maps have been deleted",
+            "action": "table_wipe"
+            })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 # Home routing for general verification
 @app.route('/')
