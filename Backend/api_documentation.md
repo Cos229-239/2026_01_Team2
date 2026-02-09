@@ -79,7 +79,7 @@ Response Format:
 }
 
 
-Update Map (Overwrite)
+*******Update Map (Overwrite)
 
 PUT /api/game/update/<int:map_id>
 
@@ -87,13 +87,24 @@ Body: { "name": "optional", "grid": [[optional]] }
 
 Purpose: Overwrites the existing record.
 
-Delete Map (Remove)
+*********Delete Map (Remove)
 
 DELETE /api/game/delete/<int:map_id>
 
 Success: 200 OK
 
-**** 5. Error Handling
+****5. Maintenance Operations
+
+Delete All Maps (Global Reset)
+
+DELETE /api/game/delete_all
+
+Purpose: Wipes the entire database table. Use with caution.
+
+Success: Returns count of deleted rows.
+
+
+Error Handling
 
 The backend will always return JSON on errors:
 
@@ -102,3 +113,4 @@ The backend will always return JSON on errors:
     "message": "Detailed error explanation",
     "error_details": "System trace"
 }
+
