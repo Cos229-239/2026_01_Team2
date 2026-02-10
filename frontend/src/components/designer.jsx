@@ -89,7 +89,10 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
         if (!gridData || !hovered || highlightedIds.size === 0) return;
         const updateGrid = gridData.grid.map(row =>
             row.map(cell=>{
-                if (highlightedIds.has(cell.id)) return {...cell, type: "selected"};
+                if (highlightedIds.has(cell.id)) {
+                    if (cell.type == "selected") return {...cell, type:"empty"};
+                    return {...cell, type: "selected"};
+                }
                 return cell;
             })
         );
