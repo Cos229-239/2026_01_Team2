@@ -10,12 +10,12 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
     const toolItems = {
         "Tools":[
             {"id":0, "name":"Select", "toolName":"select"},
-            {"id":1, "name":"Move", "toolname":"move"},
-            {"id":2, "name":"Pencil", "toolname":"pencil"},
-            {"id":3, "name":"Bucket", "toolname":"bucket"},
-            {"id":4, "name":"Polygon", "toolname": "polygon"},
-            {"id":5, "name":"Text", "toolname":"text"},
-            {"id":6, "name":"Erase", "toolname":"erase"}
+            // {"id":1, "name":"Move", "toolname":"move"},
+            {"id":1, "name":"Pencil", "toolname":"pencil"},
+            // {"id":3, "name":"Bucket", "toolname":"bucket"},
+            // {"id":4, "name":"Polygon", "toolname": "polygon"},
+            // {"id":5, "name":"Text", "toolname":"text"},
+            // {"id":6, "name":"Erase", "toolname":"erase"}
         ],
         "Assets":[
             "Structures"
@@ -73,6 +73,16 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
 
                 </div>
 
+                )
+            case "pencil":
+                return (
+                    <div>
+                        <Button className="text-lrg" onClick={()=>{setToolbarMode("main")}}>Back</Button>
+                        {
+                            //set the brush size to 1x1
+                            //update the toolbar on the toolbar to 
+                        }
+                    </div>
                 )
         }
     }

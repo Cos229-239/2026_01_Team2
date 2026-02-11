@@ -19,10 +19,11 @@ function GetPath(currentPage, path){
 
 function App() {
   const [ currPage, setPage ] = useState("designer");
-  const [ activeTool, setActiveTool ] = useState('select');
+  // const [ activeTool, setActiveTool ] = useState('select');
   const [ brushSize, setBrushSize ] = useState(1);
   const [ toolbarMode, setToolbarMode ] = useState("main");
-  const [ selectedCell, setSelectedCell ] = useState([]);
+  // const [ selectedCell, setSelectedCell ] = useState([]);
+  const [ assets, setAssets ] = useState([])
 
 
   return (
@@ -39,7 +40,7 @@ function App() {
                 gameName={gameInfo.gameName} 
                 path={GetPath(currPage, gameInfo.path)} 
                 />
-            <Designer brushSize={brushSize}/>
+            <Designer brushSize={ brushSize } setAssets ={ setAssets }/>
             </div>
           </div>
             

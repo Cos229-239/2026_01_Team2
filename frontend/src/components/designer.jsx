@@ -2,10 +2,10 @@ import { useEffect, useState, useMemo } from 'react'
 import axios from "axios";
 
 
-function Designer({brushSize, selectedCell, setSelectedCell}){
+function Designer({brushSize , setAssets}){
     const [ gridData, setGridData ] = useState(null);
     const [ error, setError ] = useState(null);
-    const [hovered, setHovered] = useState(null);
+    const [ hovered, setHovered ] = useState(null);
     
     //example get response from the backend of flask
     const fetchAPI = async () => {
@@ -15,7 +15,6 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
             // Updated to use dynamic API_BASE
             const res = await axios.get(`${API_BASE}/api/game/init`);
             setGridData(res.data);
-            
             // --- DEMO LOG: SUCCESS ---
             console.log("✅ Designer: Cloud Connection Verified!", res.data);
         } 
@@ -37,9 +36,11 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
     //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
     useEffect (() => {
         initializeData();
-        if (gridData) localStorage.setItem('grid_save', JSON.stringify(gridData));
     },[])
     
+    useEffect(() => {
+        if (gridData) localStorage.setItem('grid_save', JSON.stringify(gridData));
+    }, [gridData])
     
     const highlightedIds = useMemo(()=> {
         //create a new set if there is no grid data or hovered objects are not detected 
@@ -118,7 +119,7 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
                                 onMouseDown={placeTile}
                                 className={[
                                     "pt-3 pb-3 text-center text-sm w-full border border-neutral-400 select-none",
-                                    isHighlighted && "bg-neutral-300 border-brand-400", 
+                                    isHighlighted && "bg-neutral-300 border-brand-400",
                                 ].join(" ")
                                 
                             }
