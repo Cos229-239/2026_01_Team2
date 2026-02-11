@@ -82,6 +82,9 @@ desktop.ini
 .idea/
 *.iml
 
+# added for the .vs/ FILES
+.vs/
+
 
 ###############################################################################
 # LOGS / TEMP FILES
@@ -397,3 +400,15 @@ firestore-debug.log
 !README.md
 !docs/**
 !.github/workflows/*.yml
+.vs/2026_01_Team2.slnx/FileContentIndex/45790bc0-b286-45a5-a985-6ba91b29e3e6.vsidx
+.vs/2026_01_Team2.slnx/FileContentIndex/45790bc0-b286-45a5-a985-6ba91b29e3e6.vsidx
+/.vs
+.vs/2026_01_Team2.slnx/FileContentIndex/45790bc0-b286-45a5-a985-6ba91b29e3e6.vsidx
+.vs/2026_01_Team2.slnx/FileContentIndex/a3e9d866-ca1d-40cd-900c-45253b74c748.vsidx
+.vs/2026_01_Team2.slnx/FileContentIndex/e061c082-dad5-4581-8ea4-22aa818ea5aa.vsidx
+/.vs/2026_01_Team2.slnx
+/.vs/2026_01_Team2.slnx/FileContentIndex
+tools/.exe
+tools/.obj
+tools/.pdb
+tools/.ilk
