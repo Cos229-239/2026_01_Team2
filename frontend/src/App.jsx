@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './components/sidebar';
 import Designer from './components/designer';
 import Toolbar from './components/toolbar';
@@ -21,6 +21,20 @@ function App() {
     const [currentPage, setPage] = useState("designer");
     const [toolbarMode, setToolbarMode] = useState("main");
     const [brushSize, setBrushSize] = useState(1);
+    const [assetList, setAssetList] = useState({});
+
+    useEffect(() => {
+        const fetchAssets = async () => {
+            try {
+                const res = await fetch("http://127.0.0.1:5000/api/assets");
+                const data = await res.json();
+                setAssetList(data.assets);
+            } catch (e) {
+                console.error("Could not load asset " + e);
+            }
+        };
+        fetchAssets();
+    }, []);
 
 
   return (
