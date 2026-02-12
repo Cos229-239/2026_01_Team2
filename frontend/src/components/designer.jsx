@@ -22,10 +22,15 @@ function Designer({brushSize, activeTool}){
 
     useEffect(() => {
         const initializeData = async () => {
-            const saved = localStorage.getItem('grid_save');
-            if (saved) {
-                setGridData(JSON.parse(saved));
-            } else await fetchAPI();
+            try {
+                const saved = localStorage.getItem('grid_save');
+                if (saved) {
+                    setGridData(JSON.parse(saved));
+                } else await fetchAPI();
+            } catch (e) {
+                console.error("Save corrupted, refreshing grid.")
+                await fetchAPI();
+            }
         };
         initializeData();
     }, []);

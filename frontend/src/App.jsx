@@ -30,19 +30,20 @@ function App() {
           <div className='col-span-2'> {/* Will be moved into the child component */}
             <Sidebar />
           </div>
-          <div className='flex flex-col h-screen w-full p-16'>
+
+          <div className='col-span-8 flex flex-col p-16 overflow-hidden'>
             <div> {/* keep this within the parent for all contnt */}
-                          {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
-                          <PageHeader gameName={gameInfo.gameName} path={`${currentPage} / ${gameInfo.path}`} />
-            </div>
-            <div className='outline-1 outline-neutral-300 rounded-md overflow-auto'>
-                          <Designer brushSize={brushSize} activeTool={toolbarMode} />
-            </div>
-          </div>
-                  <div className='place-content-center'>
-                      <Toolbar toolbarMode={toolbarMode} setToolbarMode={setToolbarMode} setBrushSize={setBrushSize} />
             </div>
 
+                      <div className='outline-1 outline-neutral-300 rounded-md overflow-auto'>
+                          <PageHeader gameName={gameInfo.gameName} path={`${currentPage} / ${gameInfo.path}`} />
+
+                <Designer brushSize={brushSize} activeTool={toolbarMode} />
+            </div>
+            </div>
+            <div className='col-span-2 flex items-center justify-center bg-neutral-200'>
+                <Toolbar toolbarMode={toolbarMode} setToolbarMode={setToolbarMode} setBrushSize={setBrushSize} />
+            </div>
         </div>
         {/*<Footer />*/}
       </main>
