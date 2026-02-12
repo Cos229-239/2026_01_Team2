@@ -3,7 +3,7 @@ import Sidebar from './components/sidebar';
 import Designer from './components/designer';
 import Toolbar from './components/toolbar';
 import PageHeader from './components/pageHeader';
-
+import axios from 'axios';
 //will be deprecated later on once there is additional games added
 const gameInfo = {
   "gameName":"Clash of Clans",
@@ -17,13 +17,28 @@ function GetPath(currentPage, path){
   )
 }
 
+
 function App() {
   const [ currPage, setPage ] = useState("designer");
   // const [ activeTool, setActiveTool ] = useState('select');
   const [ brushSize, setBrushSize ] = useState(1);
   const [ toolbarMode, setToolbarMode ] = useState("main");
   // const [ selectedCell, setSelectedCell ] = useState([]);
-  const [ assets, setAssets ] = useState([])
+  const [ assets, setAssets ] = useState(null)
+  //fetching assets to pass onto children
+  const fetchAssets = async() => {
+    const API_BASE = import.meta.env.VITE_API_URL || "https://localhost:5000";
+
+    try{
+      const res = await axios.get(`${API_BASE}/api/assets`);
+      setAssets(res.data);
+      console.log("Assets Gathered");
+      console.log(res.data);
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
 
 
   return (

@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import axios from "axios";
 
 
-function Designer({brushSize , setAssets}){
+function Designer({brushSize}){
     const [ gridData, setGridData ] = useState(null);
     const [ error, setError ] = useState(null);
     const [ hovered, setHovered ] = useState(null);

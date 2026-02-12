@@ -5,19 +5,23 @@ import {
     NavbarContent,
     NavbarItem,
 } from "@heroui/react"
+import eraser from '../assets/toolbar-eraser-regular.svg'
+import pencil from '../assets/toolbar-pencil-regular.svg'
+import arrow from '../assets/toolbar-arrow-pointer-regular.svg'
 
 export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
     const toolItems = {
         "Tools":[
-            {"id":0, "name":"Select", "toolName":"select"},
+            {"id":0, "name":"Select", "toolName":"select", "asset": arrow},
             // {"id":1, "name":"Move", "toolname":"move"},
-            {"id":1, "name":"Pencil", "toolname":"pencil"},
+            {"id":1, "name":"Pencil", "toolname":"pencil", "asset": pencil},
             // {"id":3, "name":"Bucket", "toolname":"bucket"},
             // {"id":4, "name":"Polygon", "toolname": "polygon"},
             // {"id":5, "name":"Text", "toolname":"text"},
-            // {"id":6, "name":"Erase", "toolname":"erase"}
+            {"id":2, "name":"Erase", "toolname":"erase", "asset": eraser}
         ],
         "Assets":[
+            //working link that gets an image http://127.0.0.1:5000/assets/ground/tile_0000.png
             "Structures"
         ],
         "Select":[
@@ -40,10 +44,11 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
                                 toolItems.Tools.map(
                                     (tool) => (
                                         <Button 
-                                            id={tool.id} 
-                                            className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start" 
+                                            id={Math.random()} 
+                                            className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start text-neutral-600 hover:bg-neutral-400" 
                                             onClick={()=>{setToolbarMode(tool.toolName)}}
                                             >
+                                                <img className='w-10' src={tool.asset}/>
                                                 {tool.name}
                                         </Button>
                                     )
@@ -55,13 +60,13 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
                     )
             case "select":
                 return (
-                    <div>
+                <div>
                         <Button className="text-lrg" onClick={()=>{setToolbarMode("main")}}>Back</Button>
                     {
                         toolItems.Select.map(
                             (tool) => (
                                 <Button 
-                                id={tool.id} 
+                                id={Math.random()} 
                                 className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start"
                                 onClick={()=>setBrushSize(tool.brushSize)}
                                 >
