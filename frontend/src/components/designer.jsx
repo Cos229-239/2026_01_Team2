@@ -31,7 +31,8 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
     const initializeData = async () =>{
         const saved = localStorage.getItem('grid_save');
         if (saved) setGridData(JSON.parse(saved));
-        else await fetchAPI();
+		
+        await fetchAPI();
     }
     
     //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
