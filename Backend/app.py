@@ -1,20 +1,31 @@
+from collections import UserString
 from operator import imatmul
 import os
 import json                                                             # Handler for JSON strin conversion for the db
-from datetime                  import datetime         # Timestamping saves for retreival            
+from datetime                  import datetime
+from typing import Self         # Timestamping saves for retreival            
+from _pytest.doctest import _get_continue_on_failure
 from flask                          import Flask, jsonify, request, send_from_directory
 from flask_cors                 import CORS                                     # For cross origin resource sharing with frontend
 from flask_sqlalchemy     import SQLAlchemy                        # For database management
 from flask_restful              import Api                                        # For api design
 from flask_talisman          import Talisman
+# Manages user sesssion states and security
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from sqlalchemy import exc
 from sqlalchemy.orm.base import PASSIVE_NO_FETCH
 from sqlalchemy.types import Concatenable
-from werkzeug.utils import _filename_ascii_strip_re                               #Security extensions
+from werkzeug.utils import _filename_ascii_strip_re                                                              #Security extensions
+from werkzeug.security import generate_password_hash, check_password_hash            # password ecyption helper
 
 app = Flask(__name__)
+# This-> sets secret key to sign session cookies (Flask Login requirement)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_secret_key_123')
+
 # CORS initialization enables Cors for all routes
 # This-> allows the <\Vercel frontend\> to communicate with the </Render backend/>
-CORS(app)
+# allows frontend to send/receive session cookies
+CORS(app, supports_credentials=True)
 
 # Talisman sets security headers
 # forces default set below
@@ -38,6 +49,31 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
 # Database initialization
 db = SQLAlchemy(app) 
+
+# Initialization of LoginManager to handle user 'session' life cycle
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+#------ AUTH & MAP SCHEMA ------/
+# Defining user class to handle accounts and credentials
+# UserMixin to User class to provided required Flask Login properties
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+
+    # Establishing 'one to many' relationship. user can own multiple maps
+    # This-> allows us to call user.maps to see all their user save levels
+    maps = db.relationship('GameMap', backref='owner', lazy=True)
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+# User Loader function allowing Flask Login to reload the user object from the session ID
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 # ------ SAVE/LOAD SCHEMA ------/
 # Defining GameMap class to generate table
 class GameMap(db.Model):
@@ -48,14 +84,85 @@ class GameMap(db.Model):
     grid_data = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)        # will use user's system time in future for native stamps
 
+    # Adding user_id Foreign Key to link each map to user
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # Backward compatible
+
     def __repr__(self):
         return f'<GameMap {self.name}>'
+
 #db file creation  ensuring registration of GameMap
 with app.app_context():
     db.create_all()
 
 #this-> allows class based routing
 api = Api(app)                  # RESTful API wrapper Initialization
+
+#------ ACCOUNT AUTHENTICATION ROUTES ------ /
+# Signup creation routing to register users and hash passwords
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    """Registers a new user with a hashed password"""
+    try:
+        data = request.get_json()
+        if not data or 'username' not in data or 'password' not in data:
+            return jsonify({"status": "error", "message": "Username and password required"}), 400
+
+        # Database Check to prevent duplication of usernames
+        if User.query.filter_by(username=data['username']).first():
+            return jsonify({"status": "error", "message": "Username already taken"}), 409
+
+        # Password hasing security before database insert
+        hashed_pw = generate_password_hash(data['password'])
+        new_user = User(username=data['username'], password_hash=hashed_pw)
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({"status": "sucess", "message": "User created sucessfully"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# Login routing verifies hased credentials and return user context
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    """Verifies user credentials and returns a success status"""
+    try: 
+        data = request.get_json()
+        user = User.query.filter_by(username=data['username']).first()
+
+        # Verifying password hash against the provided string
+        if user and check_password_hash(user.password_hash, data['password']):
+            # login_user() creates the session cookie for the browser
+            login_user(user, remember=True)
+            return jsonify({
+                "status": "sucess",
+                "message": "Login successful",
+                "user": {"id": user.id, "username": user.username}
+                }), 200
+
+        return jsonify({"status": "error", "message": "Invalid username or password"}), 401
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# Logout routing to clear the user session cookie
+@app.route('/api/auth/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({"status": "success", "message": "Logged out sucessfully"}), 200
+
+# Session Check routing to let frontend verify if a user is still logged in
+@app.route('api/auth/session', methods=['GET'])
+def check_session():
+    if current_user.is_authenticated:
+        return jsonify({
+            "is_logged_in": True,
+            "user": {"id": current_user.id, "username": current_user.username}
+            }), 200
+    return jsonify({"is_logged_in": False}), 200
+
+
 
 #------ ASSET SERVING ROUTES-------/
 # Replace "empty" types with actual game assests/rules.
@@ -157,6 +264,10 @@ def save_game_map():
             name=map_name, grid_data=stringified_grid
         )
 
+        # Auto assigning the map to the logged in user if a session exist
+        if current_user.is_authenticated:
+            new_map.user_id = current_user.id
+
         db.session.add(new_map)
         db.session.commit()
 
@@ -169,7 +280,23 @@ def save_game_map():
         db.session.rollback()                      # against db integrity failure
         return jsonify({"status": "error", "message": str(e)}), 500
 # Test above SAVE ENDPOINT pasing JSON via POST request to: http://127.0.0.1:5000/api/game/save
+
+
 #------ LOAD ENDPOINTS------#
+
+# Routing to fetch maps specifically owned by the logged in user
+@app.route('/api/game/my-maps', methods=['GET'])
+@login_required
+def list_user_maps():
+    """Returns a list of maps belonging only to the current user"""
+    try:
+        # Logic: Filter GameMap table by current_user's ID
+        user_maps = GameMap.query.filter_by(user_id=current_user.id).all()
+        map_list = [{"id": m.id, "name": m.name, "created_at": m.created_at} for m in user_maps]
+        return jsonify({"status": "sucess", "maps": map_list})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+  
 # Routing Lets the frontend dev create a "Load Menu" by showing all map names in db
 @app.route('/api/game/maps', methods=['GET'])
 def list_maps():
@@ -213,6 +340,10 @@ def update_game_map(map_id):
         if not game_map:
             return jsonify({"status": "error", "message": "Map not found"}), 404
 
+        # Security check condition: only the owner can update the map
+        if game_map.user_id and game_map.user_id != current_user.id:
+            return jsonify({"status": "error", "message": "Unauthorized"}), 403
+
         #updating fields if provided in request
         if 'name' in data:
             game_map.name = data['name']
@@ -233,6 +364,10 @@ def delete_game_map(map_id):
         game_map = GameMap.query.get(map_id)
         if not game_map:
             return jsonify({"status": "error", "message": "Map not found"}), 404
+
+        # Security check condition: only owner can delete the map
+        if game_map.user_id and game_map.user_id != current_user.id:
+            return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
         db.session.delete(game_map)
         db.session.commit()
