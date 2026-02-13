@@ -113,4 +113,53 @@ The backend will always return JSON on errors:
     "message": "Detailed error explanation",
     "error_details": "System trace"
 }
+=================================================================================
+AUTHENTICATION & SESSION UPDATES
+==================================================================================
+
+
+1. New Auth Endpoints
+
+Signup:
+
+    POST /api/auth/signup
+
+    Body: { "username": "...", "password": "..." }
+
+Login:
+
+    POST /api/auth/login
+
+    Body: { "username": "...", "password": "..." }
+
+    Note: Starts a secure session.
+
+Logout:
+
+    POST /api/auth/logout
+    Note: Requires login. Clears session.
+
+Session Check: 
+
+    GET /api/auth/session
+    Note: Returns login status and current user object.
+
+2. User-Specific CRUD
+
+List My Maps:
+
+    GET /api/game/my-maps
+    Note: Returns only the maps owned by the logged-in user.
+
+Ownership Security:
+
+    PUT /api/game/update/<id> and DELETE /api/game/delete/<id> now verify the user_id.
+    Returns 403 Forbidden if a user attempts to edit a map they do not own.
+
+3. Frontend Requirement
+
+CORS Update: The frontend must use:
+
+    withCredentials: true 
+    in all API requests to ensure the session cookie is transmitted correctly.
 
