@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './components/sidebar';
 import Designer from './components/designer';
 import Toolbar from './components/toolbar';
@@ -24,22 +24,23 @@ function App() {
   const [ brushSize, setBrushSize ] = useState(1);
   const [ toolbarMode, setToolbarMode ] = useState("main");
   // const [ selectedCell, setSelectedCell ] = useState([]);
-  const [ assets, setAssets ] = useState(null)
+  const [ assetList, setAssetList ] = useState(null)
   //fetching assets to pass onto children
   const fetchAssets = async() => {
-    const API_BASE = import.meta.env.VITE_API_URL || "https://localhost:5000";
+  const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
-    try{
-      const res = await axios.get(`${API_BASE}/api/assets`);
-      setAssets(res.data);
-      console.log("Assets Gathered");
-      console.log(res.data);
-    }
-    catch (err) {
-      console.error(err);
-    }
+  try{
+    const res = await axios.get(`${API_BASE}/api/assets`);
+    console.log("Assets Gathered");
+    setAssetList(res.data);
   }
-
+  catch (err) {
+    console.error(err);
+  }
+}
+  useEffect(()=>{
+    fetchAssets();
+  }, [])
 
   return (
     <>
@@ -55,7 +56,7 @@ function App() {
                 gameName={gameInfo.gameName} 
                 path={GetPath(currPage, gameInfo.path)} 
                 />
-            <Designer brushSize={ brushSize } setAssets ={ setAssets }/>
+            <Designer brushSize={ brushSize }/>
             </div>
           </div>
             
@@ -63,6 +64,7 @@ function App() {
               toolbarMode = {toolbarMode}
               setToolbarMode = {setToolbarMode}
               setBrushSize={setBrushSize}
+              assetList = {assetList}
                 />
 
         </div>

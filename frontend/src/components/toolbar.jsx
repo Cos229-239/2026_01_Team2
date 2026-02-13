@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+﻿import { useState, useEffect } from "react"
 import {
     Button,
     Navbar,
@@ -9,7 +9,7 @@ import eraser from '../assets/toolbar-eraser-regular.svg'
 import pencil from '../assets/toolbar-pencil-regular.svg'
 import arrow from '../assets/toolbar-arrow-pointer-regular.svg'
 
-export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
+export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, assetList}){
     const toolItems = {
         "Tools":[
             {"id":0, "name":"Select", "toolName":"select", "asset": arrow},
@@ -20,10 +20,7 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
             // {"id":5, "name":"Text", "toolname":"text"},
             {"id":2, "name":"Erase", "toolname":"erase", "asset": eraser}
         ],
-        "Assets":[
-            //working link that gets an image http://127.0.0.1:5000/assets/ground/tile_0000.png
-            "Structures"
-        ],
+        "Assets":assetList,
         "Select":[
             {"id":0, "name": "1x1", "brushSize": 1 },
             {"id":1, "name": "2x2", "brushSize": 2 },
@@ -32,7 +29,7 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
         ]
 
     }
-
+    console.log(toolItems.Assets.assets);
 
     const renderView = (currentView) => {
         switch (currentView) {
@@ -83,10 +80,7 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize}){
                 return (
                     <div>
                         <Button className="text-lrg" onClick={()=>{setToolbarMode("main")}}>Back</Button>
-                        {
-                            //set the brush size to 1x1
-                            //update the toolbar on the toolbar to 
-                        }
+                        <div>test</div>
                     </div>
                 )
         }
