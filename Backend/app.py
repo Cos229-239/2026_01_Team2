@@ -1,19 +1,18 @@
-from collections import UserString
-from operator import imatmul
 import os
 import json                                                             # Handler for JSON strin conversion for the db
-from datetime                  import datetime
-from typing import Self         # Timestamping saves for retreival            
-from _pytest.doctest import _get_continue_on_failure
-from flask                          import Flask, jsonify, request, send_from_directory
-from flask_cors                 import CORS                                     # For cross origin resource sharing with frontend
-from flask_sqlalchemy     import SQLAlchemy                        # For database management
-from flask_restful              import Api                                        # For api design
-from flask_talisman          import Talisman
+from datetime                       import datetime
+from flask                               import Flask, jsonify, request, send_from_directory
+from flask_cors                      import CORS                                     # For cross origin resource sharing with frontend
+from flask_sqlalchemy         import SQLAlchemy                        # For database management
+from flask_restful                  import Api                                        # For api design
+from flask_talisman               import Talisman
+from flask_migrate                 import Migrate                                 # For db schema version control
 # Manages user sesssion states and security
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from sqlalchemy import MetaData                                                 #SQLite handler(constraint naming conventions)
 from sqlalchemy import exc
 from sqlalchemy.orm.base import PASSIVE_NO_FETCH
+from sqlalchemy.sql import naming
 from sqlalchemy.types import Concatenable
 from werkzeug.utils import _filename_ascii_strip_re                                                              #Security extensions
 from werkzeug.security import generate_password_hash, check_password_hash            # password ecyption helper
@@ -21,6 +20,17 @@ from werkzeug.security import generate_password_hash, check_password_hash       
 app = Flask(__name__)
 # This-> sets secret key to sign session cookies (Flask Login requirement)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_secret_key_123')
+
+# Definition: Naming convention "ValueError: ... " handling
+convention = {
+    "ix": 'ix_%(colum_0_label)s', 
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "cd_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_5(table_name)s"
+    }
+
+metadata = MetaData(naming_convention=convention)
 
 # CORS initialization enables Cors for all routes
 # This-> allows the <\Vercel frontend\> to communicate with the </Render backend/>
@@ -48,7 +58,11 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
 # Database initialization
-db = SQLAlchemy(app) 
+# passing metadata to SQLAlchemy enforcing the naming convention
+db = SQLAlchemy(app, metadata=metadata) 
+# Migrate initialization links app and db to migration
+# "render_as...." to support SQLite migration
+migrate = Migrate(app, db, render_as_batch=True)
 
 # Initialization of LoginManager to handle user 'session' life cycle
 login_manager = LoginManager()
@@ -91,8 +105,10 @@ class GameMap(db.Model):
         return f'<GameMap {self.name}>'
 
 #db file creation  ensuring registration of GameMap
-with app.app_context():
-    db.create_all()
+# Old version includes 'db.creat_all()'
+#with app.app_context():
+   # db.create_all()
+#'flask db upgrade' from the terminal to manage table creation
 
 #this-> allows class based routing
 api = Api(app)                  # RESTful API wrapper Initialization
@@ -153,7 +169,7 @@ def logout():
     return jsonify({"status": "success", "message": "Logged out sucessfully"}), 200
 
 # Session Check routing to let frontend verify if a user is still logged in
-@app.route('api/auth/session', methods=['GET'])
+@app.route('/api/auth/session', methods=['GET'])
 def check_session():
     if current_user.is_authenticated:
         return jsonify({

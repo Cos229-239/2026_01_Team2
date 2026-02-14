@@ -1,75 +1,69 @@
-BACKEND SETUP INSTRUCTIONS:
-This is entended for backend dev. Follow the steps below to sync your local environment with the <Backend/> parent folder structure
+ï»¿Phase 1: Directory & Asset Initialization
 
-1.) Pull repo entry showing:
-	2026_01_Team2/        (root)
-		-.venv/                <-------- Local only (keep at root in window file explorer)
-		-Backend/			<-----------Parent folder for backend dev
-				app.py
-				requirements.txt
-				backend_setup_instructions.txt
+#---Follow these steps in order to set up the backend environment:---/
+
+1.	Create Assets FOLDER (Not a file)
+	Navigate to your backend/ folder.
+	Create a new directory/folder named assets .
+	Path check: your-project/backend/assets/
 
 
-2.) Virtural Environment Setup
-	*Open your terminal in the root folder (2026_01_Team2) 
-			**DO NOT** 
-					-Create a new venv inside the backed folder; we use one global venv for the entire workspace.
 
-					// # Creating the environment from new
-						in terminal: from the root folder 
-							python -m venv .venv
+2.	Fix Python "Alias" Error (If app.py doesn't run)
+	-If you see the "App Execution Aliases" message, your terminal is confused.
+	-Try running the command with py instead of python : your-project/backend > py app.py
+	 	-If that fails, try: your-project/backend > python3 app.py
 
-					// # Activating the environment
-						# Windows:
-							.venv\Scripts\activate
 
-						# Mac/Linux:
-							source .venv/bin/activate
 
-3.) Installation
-	*Once the terminal shows ( .venv ) at the start of the line, move into the backend folder and install the dependencies:
-		cd Backend
-			pip install -r requirements.txt
+3.	Database Migration Setup (Dev Workflow)
+ 	-We have transitioned from db.create_all() to Flask-Migrate for professional schema management.
+	 	#---One-Time Setup Commands:
+			1.	pip install flask-migrate
+			2.	flask db init (Creates the migration folder)
+			3.	flask db migrate -m "initial migration" (Scans models)
+			4.	flask db upgrade (Creates tables in database.db )
 
-4.) Running the Backend Server
-	* To start the Flask server for testing:
-		- Stay inside the Backend folder and run:
-			
-			python app.py
+	 	*Note: From now on, use flask db upgrade to sync your database structure.
 
-		-Verification:
-			open a web browser and go to:
-				http://127.0.0.1:5000
+4.	Confirm Directory Accessibility
+	 	-Verify the structure:
+backend/ 
+	|â”€â”€ app.py
+	|â”€â”€ migrations/ (Generated after flask db init)
+	|â”€â”€ database.db (Generated after flask db upgrade) 
+	|â”€â”€ assets/
 
-				if: ( "Team 2 Flask Server is Running"  your setup is correct and verified.)
+#---BACKEND SETUP INSTRUCTIONS (Local Environment Sync)---/
+	1.	Pull repo entry showing:
 
-						else: Troubleshoot
-							- File Not Found:
-								if python app.py fails, ensure your terminal path ends in the ..../Backend. 
-									Type:  dir
-										To confirm app.py is visible in the list
+		2026_01_Team2/        (root)
+			-.venv/                 <-------- Local only     
+			-Backend/            <----------- Parent folder
+					app.py             
+					requirements.txt
 
-							- Import Errors:
-								Ensure your ( .venv ) is active and you ran the pip install command while inside the Backend folder.
+2.	Virtual Environment Setup
+	-Open terminal in root (2026_01_Team2)
+	-DO NOT create a venv inside the Backend folder.
+	-Windows: .venv\Scripts\activate
+	-Mac/Linux: source .venv/bin/activate
 
-							- Port in Use: 
-								if the server fails to start, make sure you don't have another instance of app.py running in a different terminal
+3.	Installation
+	 	-Once (.venv) is active: 
+			cd Backend 
+				pip install 
+					-r requirements.txt
 
-##------------------// WORKFLOW FOR INTEGRATION BETWEEN *FRONTEND & BACKEND* PER SEQUENCE BELOW:
+4.	Running the Backend Server 
+	-python app.py
+	-Verification: http://127.0.0.1:5000 (Should see "Team 2 Flask Server is Running")
 
-				1.	User selects “</game/layout> on the Vercel frontend
-				2.	FRONTEND sends ‘ GET /api/game/init?game_type=standard ‘ to Flask Backend
-				3.	BACKEND triggers the logic in ‘ initialize_game() ‘ function
-				4.	BACKEND calls ‘ generate_grid(20, 20) ‘  // or the grid its calling
-				5.	BACKEND returns JSON object (400 cells + metadata) to the FRONTEND / or grid info for size.
-				6.	FRONTEND maps the JSON array to a 20 x 20 CSS Grid and renders the board.
+#---INTEGRATION WORKFLOW (Frontend & Backend)---/
 
-##------------------------------------------------/END OF INTEGRATION WORKFLOW/---------------------------------------------------------------##
-
-##--------------------// DEFINITION OF DONE:
-
-					1. BACKEND: can serve a 20x20 grid <= 400 cells via JSON dynamically
-					2. Grid is generated dynamically via helper functions.
-					3. Different game modes can be triggered via URL parameters outlined in the "triggers" blocks of code
-
-##--------------------------------------------------/ END OF DEFINITION OF DONE /-----------------------------------------------------------------##
+	1.	User selects game layout on Frontend.
+	2.	Frontend sends GET /api/game/init?game_type=standard .
+	3.	Backend triggers initialize_game() .
+	4.	Backend calls generate_grid(20, 20) .
+	5.	Backend returns JSON object (grid metadata).
+	6.	Frontend renders 20x20 CSS Grid.

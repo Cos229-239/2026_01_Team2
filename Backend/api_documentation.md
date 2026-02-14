@@ -18,7 +18,7 @@ Get Asset Manifest
 
 GET /api/assets
 
-Purpose: Scans backend/assets/ subfolders.
+Purpose: Scans Backend/assets/ subfolders.
 
 Return: Object where keys are categories and values are filename arrays.
 
@@ -155,9 +155,26 @@ Ownership Security:
 
     PUT /api/game/update/<id> and DELETE /api/game/delete/<id> now verify the user_id.
     Returns 403 Forbidden if a user attempts to edit a map they do not own.
+      
+3. Frontend Implementation  Requirement (CRITICAL)
+    -Axios Configuration: The frontend MUST set:
+             'withCredentials: true
+                (globally or in individual requests)
+    -Cookie Handling:
+            -Backend issues a 'HttpOnly' session cookie upon login. No manual cookie storage is needed in React;
+            -The browser will handle it automatically if 'wiithCredentials' is enabled.
+    -State Sync: 
+            Call: '/api/auth/session'  on app mount to restore the user's logged-in state.
 
-3. Frontend Requirement
-
+4. Backend Prof of life:
+    - Database:
+            - 'Backend/instance/database.db'
+    - Password Security:
+        -All passwords stored as Scrypt hashes.
+    - Session verified via CURL:
+        - 'Set-Cookie' header
+            -Confirmed with live testing
+   
 CORS Update: The frontend must use:
 
     withCredentials: true 
