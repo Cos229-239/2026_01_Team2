@@ -9,6 +9,11 @@ from flask_talisman               import Talisman
 from flask_migrate                 import Migrate                                 # For db schema version control
 # Manages user sesssion states and security
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+# Marshmallow for data validation schemas
+from flask_marshmallow      import Marshmallow
+from marshmallow                import fields, ValidationError
+from werkzeug.exceptions    import HTTPException
+
 from sqlalchemy import MetaData                                                 #SQLite handler(constraint naming conventions)
 from sqlalchemy import exc
 from sqlalchemy.orm.base import PASSIVE_NO_FETCH
@@ -23,12 +28,12 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_secret_key_123')
 
 # Definition: Naming convention "ValueError: ... " handling
 convention = {
-    "ix": 'ix_%(colum_0_label)s', 
+    "ix": 'ix_%(column_0_label)s', 
     "uq": "uq_%(table_name)s_%(column_0_name)s",
     "ck": "cd_%(table_name)s_%(constraint_name)s",
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_5(table_name)s"
-    }
+    "pk": "pk_%(table_name)s"
+}
 
 metadata = MetaData(naming_convention=convention)
 
@@ -63,6 +68,9 @@ db = SQLAlchemy(app, metadata=metadata)
 # Migrate initialization links app and db to migration
 # "render_as...." to support SQLite migration
 migrate = Migrate(app, db, render_as_batch=True)
+
+# Initilization of Marshmallow schema handler after db.
+ma = Marshmallow(app)
 
 # Initialization of LoginManager to handle user 'session' life cycle
 login_manager = LoginManager()
@@ -104,6 +112,18 @@ class GameMap(db.Model):
     def __repr__(self):
         return f'<GameMap {self.name}>'
 
+# Validation Schemas 'Marshmallow'
+#This-> ensures inputs are valid before reaching database logic
+class UserSchema(ma.Schema):
+    username = fields.String(required=True)
+    password = fields.String(required=True)
+
+class GameMapSchema(ma.Schema):
+    name = fields.String(required=True)
+    grid = fields.List(fields.List(fields.Dict()), required=True)       #<--- 2D array validation
+
+
+
 #db file creation  ensuring registration of GameMap
 # Old version includes 'db.creat_all()'
 #with app.app_context():
@@ -113,6 +133,20 @@ class GameMap(db.Model):
 #this-> allows class based routing
 api = Api(app)                  # RESTful API wrapper Initialization
 
+# Global Error Handler
+#This->Captures and unhandled exceptions(500 errors) and returns JSON instead of HTML
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Passing HTTP errors (ie: 404, 403)
+    if isinstance(e, HTTPException):
+        return e
+    # JSON return generic
+    return jsonify({
+        "status": "error",
+        "message": "Internal Server Error",
+        "error_details": str(e)
+        }), 500
+
 #------ ACCOUNT AUTHENTICATION ROUTES ------ /
 # Signup creation routing to register users and hash passwords
 @app.route('/api/auth/signup', methods=['POST'])
@@ -120,8 +154,11 @@ def signup():
     """Registers a new user with a hashed password"""
     try:
         data = request.get_json()
-        if not data or 'username' not in data or 'password' not in data:
-            return jsonify({"status": "error", "message": "Username and password required"}), 400
+        # Using Schema to validate input in lieu of manual 'if's'
+        try:
+            UserSchema().load(data)
+        except ValidationError as err:
+            return jsonify({"status": "error", "message": err.messages}), 400
 
         # Database Check to prevent duplication of usernames
         if User.query.filter_by(username=data['username']).first():
@@ -137,7 +174,8 @@ def signup():
         return jsonify({"status": "sucess", "message": "User created sucessfully"}), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"status": "error", "message": str(e)}), 500
+        # Global error handler will catch this keeping catch for 'rollback'
+        raise e
 
 # Login routing verifies hased credentials and return user context
 @app.route('/api/auth/login', methods=['POST'])
@@ -145,6 +183,12 @@ def login():
     """Verifies user credentials and returns a success status"""
     try: 
         data = request.get_json()
+        # Using Schema to validate input
+        try:
+            UserSchema().load(data)
+        except ValidationError as err:
+            return jsonify({"status": "error", "message": err.messages}), 400
+
         user = User.query.filter_by(username=data['username']).first()
 
         # Verifying password hash against the provided string
@@ -264,10 +308,14 @@ def save_game_map():
     try:
         data = request.get_json()
 
-        # Validation: Ensuring name and grid exist in payload
-        # Checks for name and grid to prevent empty saves    
-        if not data or 'name' not in data or 'grid' not in data:
-            return jsonify({"status": "error", "message": "Missing map name or grid data"}), 400
+        # Validation: Using strict validation via GameMapSchema
+        # Checks for name and grid to prevent empty saves replaces manual check commented out   
+        #if not data or 'name' not in data or 'grid' not in data:
+          #  return jsonify({"status": "error", "message": "Missing map name or grid data"}), 400
+        try:
+            GameMapSchema().load(data)
+        except ValidationError as err:
+            return jsonify({"status": "error", "message": err.messages}), 400
 
         map_name = data['name']
         grid_array = data["grid"]
