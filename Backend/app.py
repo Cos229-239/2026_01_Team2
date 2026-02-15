@@ -1,6 +1,7 @@
 import os
 import json                                                             # Handler for JSON strin conversion for the db
 from datetime                       import datetime
+from functools                       import wraps          # Req: for Custom decorators
 from flask                               import Flask, jsonify, request, send_from_directory
 from flask_cors                      import CORS                                     # For cross origin resource sharing with frontend
 from flask_sqlalchemy         import SQLAlchemy                        # For database management
@@ -106,6 +107,9 @@ class GameMap(db.Model):
     grid_data = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)        # will use user's system time in future for native stamps
 
+    # updated at colum for auditing map chages
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
     # Adding user_id Foreign Key to link each map to user
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # Backward compatible
 
@@ -146,6 +150,22 @@ def handle_exception(e):
         "message": "Internal Server Error",
         "error_details": str(e)
         }), 500
+
+# Custom Decorator to enforce ownership security on routes
+def map_owner_required(f):
+    """Decorator to ensure the current user owns the map they are trying to access"""
+    @wraps(f)
+    def decorated_function(map_id, *args, **kwargs):
+        game_map = GameMap.query.get(map_id)
+        if not game_map:
+            return jsonify({"status": "error", "message": "Map not found"}), 404
+
+        # Unauthorized if map has an owner and not current User
+        if game_map.user_id and game_map.user_id != current_user.id:
+            return jsonify({"status": "error", "message": "Unauthorized: You do not own this map"}), 403
+
+        return f(map_id, *args, **kwargs)
+    return decorated_function
 
 #------ ACCOUNT AUTHENTICATION ROUTES ------ /
 # Signup creation routing to register users and hash passwords
@@ -355,8 +375,12 @@ def list_user_maps():
     """Returns a list of maps belonging only to the current user"""
     try:
         # Logic: Filter GameMap table by current_user's ID
-        user_maps = GameMap.query.filter_by(user_id=current_user.id).all()
-        map_list = [{"id": m.id, "name": m.name, "created_at": m.created_at} for m in user_maps]
+        # Sorting maps by updated at stamp <Newest First>
+        user_maps = GameMap.query.filter_by(user_id=current_user.id)\
+            .order_by(GameMap.updated_at.desc()).all()
+
+        # Updated at to response
+        map_list = [{"id": m.id, "name": m.name, "created_at": m.created_at, "updated_at": m.updated_at} for m in user_maps]
         return jsonify({"status": "sucess", "maps": map_list})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -397,21 +421,16 @@ def load_game_map(map_id):
 @app.route('/api/game/update/<int:map_id>', methods=['PUT'])
 def update_game_map(map_id):
     """Overwrites an existing map's grid data and name"""
+    # Refactored with @map_owner_required decorator
+    # decorator handles the map lookup and ownership checks automatically
     try:
         data = request.get_json()
         game_map = GameMap.query.get(map_id)
 
-        if not game_map:
-            return jsonify({"status": "error", "message": "Map not found"}), 404
-
-        # Security check condition: only the owner can update the map
-        if game_map.user_id and game_map.user_id != current_user.id:
-            return jsonify({"status": "error", "message": "Unauthorized"}), 403
-
         #updating fields if provided in request
         if 'name' in data:
             game_map.name = data['name']
-        if 'grid' in data:                                                
+        if 'grid' in data:
             game_map.grid_data = json.dumps(data['grid'])
 
         db.session.commit()
@@ -422,17 +441,13 @@ def update_game_map(map_id):
 
 # Routing Permanet Deletion
 @app.route('/api/game/delete/<int:map_id>', methods=['DELETE'])
+@login_required
+@map_owner_required
 def delete_game_map(map_id):
     """Removes a map from the database permanently"""
+    # Refactored with @map_owner_required decorator
     try:
         game_map = GameMap.query.get(map_id)
-        if not game_map:
-            return jsonify({"status": "error", "message": "Map not found"}), 404
-
-        # Security check condition: only owner can delete the map
-        if game_map.user_id and game_map.user_id != current_user.id:
-            return jsonify({"status": "error", "message": "Unauthorized"}), 403
-
         db.session.delete(game_map)
         db.session.commit()
         return jsonify({"status": "success", "message": f"Map {map_id} deleted successfully"})
