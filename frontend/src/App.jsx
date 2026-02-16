@@ -32,14 +32,21 @@ function App() {
   try{
     const res = await axios.get(`${API_BASE}/api/assets`);
     console.log("Assets Gathered");
-    setAssetList(res.data);
+    setAssetList(res.data.assets);
   }
   catch (err) {
     console.error(err);
   }
 }
+
+  const initializeAssets = async ()=>{
+    const saved = localStorage.getItem('assets');
+    if (saved) setAssetList(JSON.parse(saved));
+    else await fetchAssets();
+  }
+
   useEffect(()=>{
-    fetchAssets();
+    initializeAssets();
   }, [])
 
   return (

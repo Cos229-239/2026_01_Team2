@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from "react"
 import {
     Button,
+    groupDataFocusVisibleClasses,
     Navbar,
     NavbarContent,
     NavbarItem,
@@ -29,8 +30,9 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
         ]
 
     }
-    console.log(toolItems.Assets.assets);
-
+    console.log(toolItems.assets);
+    const ASSET_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+    const assetByGroup = assetList?.assets ??{};
     const renderView = (currentView) => {
         switch (currentView) {
             case "main":
@@ -80,7 +82,21 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                 return (
                     <div>
                         <Button className="text-lrg" onClick={()=>{setToolbarMode("main")}}>Back</Button>
-                        <div>test</div>
+                        {Object.entries(toolItems.Assets).map(([group, files])=>(
+                            <div key={group}>
+                                <div>{group}</div>
+                                <div>
+                                    {files.map((filename) => (
+                                        <img
+                                            key={`${group}-${filename}`}
+                                            src = {`${ASSET_BASE_URL}/assets/${group}/${filename}`}
+                                            alt = {`${group} ${filename}`}
+                                            loading = "lazy"
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )
         }
