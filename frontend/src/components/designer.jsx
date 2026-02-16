@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from 'react'
+import Cell from './cell';
 import axios from "axios";
 
 
-function Designer({brushSize}){
+function Designer({brushSize, toolbarMode}){
     const [ gridData, setGridData ] = useState(null);
     const [ error, setError ] = useState(null);
     const [ hovered, setHovered ] = useState(null);
@@ -27,9 +28,12 @@ function Designer({brushSize}){
         }
     };
 
-    const initializeData = async () =>{
+    const initializeData = async () => {
         const saved = localStorage.getItem('grid_save');
-        if (saved) setGridData(JSON.parse(saved));
+        if (saved) {
+            const parsedData = JSON.parse(saved);
+            setGridData(prev => prev === null ? parsedData : prev);
+        }
         else await fetchAPI();
     }
     
@@ -91,8 +95,8 @@ function Designer({brushSize}){
         const updateGrid = gridData.grid.map(row =>
             row.map(cell=>{
                 if (highlightedIds.has(cell.id)) {
-                    if (cell.type == "selected") return {...cell, type:"empty"};
-                    return {...cell, type: "selected"};
+                    if (toolbarMode === "erase") return {...cell, type:"empty"};
+                    return {...cell, type: toolbarMode};
                 }
                 return cell;
             })
@@ -118,15 +122,11 @@ function Designer({brushSize}){
                                 onMouseLeave={()=>setHovered(null)}
                                 onMouseDown={placeTile}
                                 className={[
-                                    "pt-3 pb-3 text-center text-sm w-full border border-neutral-400 select-none",
+                                    "aspect-square w-full border border-neutral-400 select-none flex items-center justify-center overflow-hidden",
                                     isHighlighted && "bg-neutral-300 border-brand-400",
-                                ].join(" ")
-                                
-                            }
-
-
+                                ].join(" ")}
                             >
-                                {cell.type}
+                                <Cell type={cell.type} />
                             </div>
                         );
                     })}

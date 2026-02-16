@@ -41,11 +41,12 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                         <Button size="sm" onClick={() => { setToolbarMode("main") }}>Back</Button>
                         {toolItems.Select.map((tool) => (
                             <Button
+                                isIconOnly
+                                title="Select Tool"
                                 id={tool.id}
                                 className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start"
                                 onClick={() => setBrushSize(tool.brushSize)}
                             >
-                                {tool.name}
                             </Button>
                         ))}
                     </div>
@@ -60,6 +61,8 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                                 <div className="grid grid-cols-3 gap-2">
                                     {Array.isArray(files) && files.map((filename) => (
                                         <img
+                                            isIconOnly
+                                            title = "Pencil Tool"
                                             key={`${group}-${filename}`}
                                             src={`${ASSET_BASE_URL}/assets/${group}/${filename}`}
                                             alt={filename}
@@ -82,7 +85,6 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                                 onClick={() => { setToolbarMode(tool.toolName) }}
                             >
                                 <img className="w-10 mr-2" src={tool.asset} alt="" />
-                                {tool.name}
                             </Button>
                         ))}
                     </div>
@@ -95,9 +97,11 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
     }, [setToolbarMode])
 
     return (
-        <div className='h-full min-w-[260px] max-w-[300px] border-r border-neutral-200 bg-neutral-100 shadow-inner flex flex-col'>
+            <div className={`h-screen bg-neutral-200 transition-all duration-300 border-l border-neutral-300 shadow-xl flex flex-col ${
+            toolbarMode === "main" ? "w-20" : "w-64"
+        }`}>
             {renderView(toolbarMode)}
-            </div>
+        </div>
     )
 
     }
