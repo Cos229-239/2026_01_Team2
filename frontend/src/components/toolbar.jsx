@@ -95,10 +95,8 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
     }, [setToolbarMode])
 
     return (
-            <div className='place-content-center w-fit'>
-            <div className="h-full bg-neutral-300 rounded-bl-md rounded-tl-md pt-4 pb-4 place-content-center">
+        <div className='h-full min-w-[260px] max-w-[300px] border-r border-neutral-200 bg-neutral-100 shadow-inner flex flex-col'>
             {renderView(toolbarMode)}
-            </div>
             </div>
     )
 
