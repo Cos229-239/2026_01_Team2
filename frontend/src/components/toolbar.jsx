@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from "react"
 import {
     Button,
-    groupDataFocusVisibleClasses,
+    //groupDataFocusVisibleClasses,
     Navbar,
     NavbarContent,
     NavbarItem,
@@ -32,73 +32,61 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
     }
     console.log(toolItems.assets);
     const ASSET_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
-    const assetByGroup = assetList?.assets ??{};
+    //const assetByGroup = assetList?.assets ??{};
     const renderView = (currentView) => {
         switch (currentView) {
-            case "main":
-                return (
-
-                        <div>
-                            {
-                                toolItems.Tools.map(
-                                    (tool) => (
-                                        <Button 
-                                            id={Math.random()} 
-                                            className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start text-neutral-600 hover:bg-neutral-400" 
-                                            onClick={()=>{setToolbarMode(tool.toolName)}}
-                                            >
-                                                <img className='w-10' src={tool.asset}/>
-                                                {tool.name}
-                                        </Button>
-                                    )
-                                )
-                            }
-
-                        </div>
-
-                    )
             case "select":
                 return (
-                <div>
-                        <Button className="text-lrg" onClick={()=>{setToolbarMode("main")}}>Back</Button>
-                    {
-                        toolItems.Select.map(
-                            (tool) => (
-                                <Button 
-                                id={Math.random()} 
+                    <div className="flex flex-col gap-2 p-2">
+                        <Button size="sm" onClick={() => { setToolbarMode("main") }}>Back</Button>
+                        {toolItems.Select.map((tool) => (
+                            <Button
+                                id={tool.id}
                                 className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start"
-                                onClick={()=>setBrushSize(tool.brushSize)}
-                                >
-                                        {tool.name}
-                                </Button>
-                            )
-                        )
-                    }
-
-                </div>
-
-                )
+                                onClick={() => setBrushSize(tool.brushSize)}
+                            >
+                                {tool.name}
+                            </Button>
+                        ))}
+                    </div>
+                );
             case "pencil":
                 return (
-                    <div>
-                        <Button className="text-lrg" onClick={()=>{setToolbarMode("main")}}>Back</Button>
-                        {Object.entries(toolItems.Assets).map(([group, files])=>(
-                            <div key={group}>
-                                <div>{group}</div>
-                                <div>
-                                    {files.map((filename) => (
+                    <div className="p-4 max-h-[80vh] overflow-y-auto">
+                        <Button className="mb-4" onClick={() => { setToolbarMode("main") }}>Back</Button>
+                        {Object.entries(assetList || {}).map(([group, files]) => (
+                            <div key={group} className="mb-4">
+                                <div className="text-sm font-bold uppercase text-neutral-500 mb-2">{group}</div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {Array.isArray(files) && files.map((filename) => (
                                         <img
                                             key={`${group}-${filename}`}
-                                            src = {`${ASSET_BASE_URL}/assets/${group}/${filename}`}
-                                            alt = {`${group} ${filename}`}
-                                            loading = "lazy"
+                                            src={`${ASSET_BASE_URL}/assets/${group}/${filename}`}
+                                            alt={filename}
+                                            className="w-12 h-12 object-contain cursor-pointer hover:scale-110 transition-transform bg-white rounded border border-neutral-400"
+                                            onClick={() => setToolbarMode(`${group}/${filename}`)}
                                         />
                                     ))}
                                 </div>
                             </div>
                         ))}
                     </div>
-                )
+                );
+            default: // Main
+                return (
+                    <div className="flex flex-col gap-2">
+                        {toolItems.Tools.map((tool) => (
+                            <Button
+                                id={tool.id}
+                                className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start text-neutral-600 hover:bg-neutral-400"
+                                onClick={() => { setToolbarMode(tool.toolName) }}
+                            >
+                                <img className="w-10 mr-2" src={tool.asset} alt="" />
+                                {tool.name}
+                            </Button>
+                        ))}
+                    </div>
+                );
         }
     }
 
