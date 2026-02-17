@@ -4,6 +4,16 @@ Status: Persistence Layer (Phase 4) Complete
 
 /*This document serves as the technical handoff between the Backend and Frontend. */
 
+******// IMPORTANT CHANGES  02/17/2026 //******
+    - All endpoints previously at /api/... are now at /api/v1...
+    - Examples are below in document
+
+    NEW ASSET ACCESS IS STRICTLY:
+    * Assets are served dynamically *
+    - Manifest: GET /api/v1/assets
+    - GET /api/v1/assets/category/filename.png
+    *** 
+
 ********* 1. Server Connectivity
 
 Base URL: http://127.0.0.1:5000
@@ -16,7 +26,7 @@ Security: Talisman is active (force_https=False for local dev).
 
 Get Asset Manifest
 
-GET /api/assets
+GET /api/v1/assets
 
 Purpose: Scans Backend/assets/ subfolders.
 
@@ -28,7 +38,7 @@ Example Use: manifest.ground.map(img => ...)
 
 Initialize New Grid
 
-GET /api/game/init?game_type=standard
+GET /api/v1/game/init?game_type=standard
 
 Query Params: game_type (mini = 5x5, standard = 20x20)
 
@@ -38,7 +48,7 @@ Note: Returns a raw 2D array of "empty" cell objects with unique IDs.
 
 Save Map (Create)
 
-POST /api/game/save
+POST /api/v1/game/save
 
 Body: { "name": "string", "grid": [[Object]] }
 
@@ -46,7 +56,7 @@ Success: 201 Created
 
 List Maps (Read All)
 
-GET /api/game/maps
+GET /api/v1/game/maps
 
 Usage: Returns a list of all saved map metadata.
 
@@ -66,7 +76,7 @@ Response Format:
 
 Load Map (Read One)
 
-GET /api/game/load/<int:map_id>
+GET /api/v1/game/load/<int:map_id>
 
 Usage: Fetches the full 2D grid array for the requested ID.
 
@@ -81,7 +91,7 @@ Response Format:
 
 *******Update Map (Overwrite)
 
-PUT /api/game/update/<int:map_id>
+PUT /api/v1/game/update/<int:map_id>
 
 Body: { "name": "optional", "grid": [[optional]] }
 
@@ -89,7 +99,7 @@ Purpose: Overwrites the existing record.
 
 *********Delete Map (Remove)
 
-DELETE /api/game/delete/<int:map_id>
+DELETE /api/v1/game/delete/<int:map_id>
 
 Success: 200 OK
 
@@ -97,14 +107,30 @@ Success: 200 OK
 
 Delete All Maps (Global Reset)
 
-DELETE /api/game/delete_all
+DELETE /api/v1/game/delete_all
 
 Purpose: Wipes the entire database table. Use with caution.
 
 Success: Returns count of deleted rows.
 
 
-Error Handling
+******Error Handling *****                      Message:                                    Frontend implement
+
+#400 level errors for Frontend
+    - 400 Bad Request                  'ValidationError'          
+                                                                        ------------>need: F/E to Display field err message 
+                                                                        
+    - 401 Unauthorized                'Invalid username or password'
+                                                                        ------------>need: F/E to Clear login and prompt to retry 
+                                                                        
+    - 403 Forbidden                       'Unauthorized: You don't own map'
+                                                                        ---------->need F/E to: Disable 'Save' button or redirect 
+                                                                        
+    - 404 Not Found                       'Map not found'
+                                                                        --------->need F/E to: Redirect to the load Menu 
+
+    - 409 Conflict                             'User name already taken' 
+                                                                        --------->need F/E to: Highlight username field as invalid    
 
 The backend will always return JSON on errors:
 
@@ -122,13 +148,13 @@ AUTHENTICATION & SESSION UPDATES
 
 Signup:
 
-    POST /api/auth/signup
+    POST /api/v1/auth/signup
 
     Body: { "username": "...", "password": "..." }
 
 Login:
 
-    POST /api/auth/login
+    POST /api/v1/auth/login
 
     Body: { "username": "...", "password": "..." }
 
@@ -136,24 +162,24 @@ Login:
 
 Logout:
 
-    POST /api/auth/logout
+    POST /api/v1/auth/logout
     Note: Requires login. Clears session.
 
 Session Check: 
 
-    GET /api/auth/session
+    GET /api/v1/auth/session
     Note: Returns login status and current user object.
 
 2. User-Specific CRUD
 
 List My Maps:
 
-    GET /api/game/my-maps
+    GET /api/v1/game/my-maps
     Note: Returns only the maps owned by the logged-in user.
 
 Ownership Security:
 
-    PUT /api/game/update/<id> and DELETE /api/game/delete/<id> now verify the user_id.
+    PUT /api/v1/game/update/<id> and DELETE /api/game/delete/<id> now verify the user_id.
     Returns 403 Forbidden if a user attempts to edit a map they do not own.
       
 3. Frontend Implementation  Requirement (CRITICAL)
@@ -164,7 +190,7 @@ Ownership Security:
             -Backend issues a 'HttpOnly' session cookie upon login. No manual cookie storage is needed in React;
             -The browser will handle it automatically if 'wiithCredentials' is enabled.
     -State Sync: 
-            Call: '/api/auth/session'  on app mount to restore the user's logged-in state.
+            Call: '/api/v1/auth/session'  on app mount to restore the user's logged-in state.
 
 4. Backend Prof of life:
     - Database:
