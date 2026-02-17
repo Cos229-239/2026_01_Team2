@@ -15,11 +15,11 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
         "Tools":[
             {"id":0, "name":"Select", "toolName":"select", "asset": arrow},
             // {"id":1, "name":"Move", "toolname":"move"},
-            {"id":1, "name":"Pencil", "toolname":"pencil", "asset": pencil},
+            {"id":1, "name":"Pencil", "toolName":"pencil", "asset": pencil},
             // {"id":3, "name":"Bucket", "toolname":"bucket"},
             // {"id":4, "name":"Polygon", "toolname": "polygon"},
             // {"id":5, "name":"Text", "toolname":"text"},
-            {"id":2, "name":"Erase", "toolname":"erase", "asset": eraser}
+            {"id":2, "name":"Erase", "toolName":"erase", "asset": eraser}
         ],
         "Assets":assetList,
         "Select":[
@@ -38,39 +38,36 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
             case "select":
                 return (
                     <div className="flex flex-col gap-2 p-2">
-                        <Button size="sm" onClick={() => { setToolbarMode("main") }}>Back</Button>
+                        <Button size="sm" title="Select Tool" onClick={() => { setToolbarMode("main") }}>Back</Button>
                         {toolItems.Select.map((tool) => (
                             <Button
-                                isIconOnly
-                                title="Select Tool"
+                                title={`Brush Size: ${tool.brushSize}`}
                                 id={tool.id}
                                 className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start"
                                 onClick={() => setBrushSize(tool.brushSize)}
-                            >
+                            > {tool.brushSize}x{tool.brushSize}
                             </Button>
                         ))}
                     </div>
                 );
             case "pencil":
                 return (
-                    <div className="p-4 max-h-[80vh] overflow-y-auto">
-                        <Button className="mb-4" onClick={() => { setToolbarMode("main") }}>Back</Button>
+                    <div className="flex flex-col gap-4 p-2 max-h-[80vh] overflow-y-auto w-full items-center">
+                        <Button size="sm" title="Pencil Tool" className="mb-2 w-full" onClick={() => { setToolbarMode("main") }}>Back</Button>
                         {Object.entries(assetList || {}).map(([group, files]) => (
-                            <div key={group} className="mb-4">
-                                <div className="text-sm font-bold uppercase text-neutral-500 mb-2">{group}</div>
-                                <div className="grid grid-cols-3 gap-2">
+                            <div key={group} className="w-full flex flex-col items-center gap-2">
+                                <span className="text-[10px] font-bold uppercase text-neutral-500">{group}</span>
                                     {Array.isArray(files) && files.map((filename) => (
                                         <img
-                                            isIconOnly
-                                            title = "Pencil Tool"
+                                            title={filename}
                                             key={`${group}-${filename}`}
                                             src={`${ASSET_BASE_URL}/assets/${group}/${filename}`}
                                             alt={filename}
-                                            className="w-12 h-12 object-contain cursor-pointer hover:scale-110 transition-transform bg-white rounded border border-neutral-400"
-                                            onClick={() => setToolbarMode(`${group}/${filename}`)}
+                                            className="w-14 h-14 object-contain cursor-pointer hover:scale-110 transition-transform hover:bg-white rounded border border-2 border-neutral-300 hover:border-brand-500"
+                                            onClick={() => {setToolbarMode(`${group}/${filename}`); console.log("Brush changed to: ", `${group}/${filename}`);
+                                            }}
                                         />
                                     ))}
-                                </div>
                             </div>
                         ))}
                     </div>
@@ -78,15 +75,19 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
             default: // Main
                 return (
                     <div className="flex flex-col gap-2">
-                        {toolItems.Tools.map((tool) => (
-                            <Button
-                                id={tool.id}
-                                className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start text-neutral-600 hover:bg-neutral-400"
-                                onClick={() => { setToolbarMode(tool.toolName) }}
-                            >
-                                <img className="w-10 mr-2" src={tool.asset} alt="" />
-                            </Button>
-                        ))}
+                        {toolItems.Tools.map((tool) => {
+                            const isActive = toolbarMode === tool.toolName || (tool.toolName === "pencil" && toolbarMode.includes("/"));
+                            return (
+                                <Button
+                                    title="Default Tool"
+                                    id={tool.id}
+                                    className={`data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start transition-all ${isActive ? "border-l-8 border-brand-600 bg-neutral-300 shadow-inner" : "border-l-0 border-transparent text-neutral-600 hover:bg-neutral-400"}`}
+                                    onClick={() => { setToolbarMode(tool.toolName) }}
+                                >
+                                    <img className="w-10 mr-2" src={tool.asset} alt="" />
+                                </Button>
+                            );
+                        })}
                     </div>
                 );
         }
@@ -94,36 +95,14 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
 
     useEffect(()=>{
         console.log(toolbarMode);
-    }, [setToolbarMode])
+    }, [toolbarMode])
 
     return (
-            <div className={`h-screen bg-neutral-200 transition-all duration-300 border-l border-neutral-300 shadow-xl flex flex-col ${
-            toolbarMode === "main" ? "w-20" : "w-64"
+            <div className={`h-screen bg-neutral-200 transition-all duration-300 border-l border-neutral-300 shadow-xl ${
+            toolbarMode === "main" ? "w-20" : "w-72"
         }`}>
             {renderView(toolbarMode)}
         </div>
     )
 
     }
-
-{/*
-
-    // return (
-    //     <div className='place-content-center'>
-    //     <div className="h-fit w-fit bg-neutral-300 rounded-bl-md rounded-tl-md pt-4 pb-4 place-content-center">
-            
-    //         <div>
-    //             {
-    //                 toolItems.Tools.map(
-    //                     (tool) => (
-    //                         <Button id={tool.id} className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start">{tool.name}</Button>
-    //                     )
-    //                 )
-    //             }
-
-    //         </div>
-            
-    //     </div>
-    //     </div>
-    // )
-*/}

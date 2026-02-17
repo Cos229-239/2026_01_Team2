@@ -62,8 +62,8 @@ function App() {
               <PageHeader 
                 gameName={gameInfo.gameName} 
                 path={GetPath(currPage, gameInfo.path)} 
-                />
-            <Designer brushSize={ brushSize }/>
+                          />
+                          <Designer brushSize={brushSize} toolbarMode={toolbarMode} />
             </div>
           </div>
             
