@@ -25,6 +25,8 @@ function App() {
   const [ toolbarMode, setToolbarMode ] = useState("main");
   // const [ selectedCell, setSelectedCell ] = useState([]);
   const [ assetList, setAssetList ] = useState(null)
+  const [ saveToBackend, setSaveToBackend ] = useState(false)
+
   //fetching assets to pass onto children
   const fetchAssets = async() => {
   const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
@@ -48,7 +50,7 @@ function App() {
   useEffect(()=>{
     initializeAssets();
   }, [])
-
+  
   return (
     <>
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
@@ -62,8 +64,13 @@ function App() {
               <PageHeader 
                 gameName={gameInfo.gameName} 
                 path={GetPath(currPage, gameInfo.path)} 
-                          />
-                          <Designer brushSize={brushSize} toolbarMode={toolbarMode} />
+                />
+              <Designer 
+                brushSize={brushSize} 
+                toolbarMode={toolbarMode} 
+                saveToBackend={saveToBackend}
+                setSavetoBackend={setSaveToBackend}
+                />
             </div>
           </div>
             
@@ -72,6 +79,7 @@ function App() {
               setToolbarMode = {setToolbarMode}
               setBrushSize={setBrushSize}
               assetList = {assetList}
+              setSaveToBackend={setSaveToBackend}
                 />
 
         </div>

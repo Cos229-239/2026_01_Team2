@@ -9,8 +9,9 @@ import {
 import eraser from '../assets/toolbar-eraser-regular.svg'
 import pencil from '../assets/toolbar-pencil-regular.svg'
 import arrow from '../assets/toolbar-arrow-pointer-regular.svg'
+import save from '../assets/toolbar-save-regular.svg'
 
-export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, assetList}){
+export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, assetList, setSaveToBackend}){
     const toolItems = {
         "Tools":[
             {"id":0, "name":"Select", "toolName":"select", "asset": arrow},
@@ -19,7 +20,8 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
             // {"id":3, "name":"Bucket", "toolname":"bucket"},
             // {"id":4, "name":"Polygon", "toolname": "polygon"},
             // {"id":5, "name":"Text", "toolname":"text"},
-            {"id":2, "name":"Erase", "toolName":"erase", "asset": eraser}
+            {"id":2, "name":"Erase", "toolName":"erase", "asset": eraser},
+            {"id":3, "name":"Save", "toolName":"save", "asset": save}
         ],
         "Assets":assetList,
         "Select":[
@@ -32,7 +34,7 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
     }
     console.log(toolItems.assets);
     const ASSET_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
-    //const assetByGroup = assetList?.assets ??{};
+    
     const renderView = (currentView) => {
         switch (currentView) {
             case "select":
@@ -52,11 +54,12 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                 );
             case "pencil":
                 return (
+                    <>
+                    <Button size="sm" title="Pencil Tool" className="mb-2 w-full" onClick={() => { setToolbarMode("main") }}>Back</Button>
                     <div className="flex flex-col gap-4 p-2 max-h-[80vh] overflow-y-auto w-full items-center">
-                        <Button size="sm" title="Pencil Tool" className="mb-2 w-full" onClick={() => { setToolbarMode("main") }}>Back</Button>
                         {Object.entries(assetList || {}).map(([group, files]) => (
                             <div key={group} className="w-full flex flex-col items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase text-neutral-500">{group}</span>
+                                <span className="text-[12px] font-bold uppercase text-neutral-500">{group}</span>
                                     {Array.isArray(files) && files.map((filename) => (
                                         <img
                                             title={filename}
@@ -71,7 +74,12 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                             </div>
                         ))}
                     </div>
+                    </>
                 );
+            case "save":
+                setSaveToBackend(true);
+                setToolbarMode("main");
+                return;
             default: // Main
                 return (
                     <div className="flex flex-col gap-2">
