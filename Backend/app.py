@@ -1,7 +1,8 @@
 import os
 import json                                                             # Handler for JSON strin conversion for the db
 from datetime                       import datetime
-from functools                       import wraps          # Req: for Custom decorators
+from functools                       import wraps
+import re          # Req: for Custom decorators
 
 from flask                               import Flask, jsonify, request, send_from_directory, Blueprint
 from flask_cors                      import CORS                                     # For cross origin resource sharing with frontend
@@ -24,11 +25,53 @@ from sqlalchemy.types import Concatenable
 from werkzeug.utils import _filename_ascii_strip_re                                                              #Security extensions
 from werkzeug.security import generate_password_hash, check_password_hash            # password ecyption helper
 
+# Logging imports for file based error logging (pre production prep)
+import logging
+from logging.handlers import RotatingFileHandler
+
+#Rate limiter imports to protext auth endpoints from brute force
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+# Import text for db health checks
+from sqlalchemy import text
+
 app = Flask(__name__)
 # This-> sets secret key to sign session cookies (Flask Login requirement)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_secret_key_123')
 
-# Definition: Naming convention "ValueError: ... " handling
+# Definitions: 
+# Safety audit to prvent running with dev default secrets
+def production_env_audit():
+    env = os.environ.get("FLASK_ENV") or os.environ.get("ENV") or ""
+    is_prod = env.lower() in {"prod", "production"}
+
+    # Default secret usage detection
+    if is_prod and app.config.get("SECRET_KEY") == "dev_secret_key_123":
+        raise RuntimeError("SECURITY BLOCK: SECRET_KEY is using the dev fallback in production")
+
+    # Esuring DATABASE_URL is not empty in prduction
+    if is_prod and not os.environ.get("DATABASE_URL"):
+        raise RuntimeError("SECURITY BLOCK: DATABASE_URL must be set in production.")
+production_env_audit()
+
+# Rotating file logger API errors beyond console ouput
+LOG_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOG_FILE = os.path.join(LOG_DIR, "api_errors.log")
+
+file_handler = RotatingFileHandler(LOG_FILE, maxBytes=2_000_000, backupCount=5)
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter( 
+    "%(acstime)s | %(levelname)s | %(name)s | %(message)s"
+))
+app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.INFO)
+app.logger.propagate = False
+
+
+# Naming convention "ValueError: ... " handling
 convention = {
     "ix": 'ix_%(column_0_label)s', 
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -48,6 +91,13 @@ CORS(app, supports_credentials=True)
 # forces default set below
 #this-> allows us to keep testing locally on the http://127.0.0.1 ip "addy"
 Talisman(app, force_https=False)
+
+# Global limiter instance (default limits can be tuned per route)
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[]
+    )
 
 # --- DATA CONFIG ---
 # Logic: Use Render's Database if available, otherwise fallback to local SQLite file
@@ -138,7 +188,7 @@ class GameMapSchema(ma.Schema):
 #'flask db upgrade' from the terminal to manage table creation
 
 #this-> allows class based routing
-api = Api(v1)                  # RESTful API wrapper Initialization
+api = Api(v1)                  # RESTful API wrapper Initialization w/v1 Blueprint without overriding
 
 # Global Error Handler
 #This->Captures and unhandled exceptions(500 errors) and returns JSON instead of HTML
@@ -152,6 +202,15 @@ def handle_exception(e):
         "status": "error",
         "message": "Internal Server Error",
         "error_details": str(e)
+        }), 500
+
+# Secondary error handler hook to ensure exceptions get logged to file
+@app.errorhandler(500)
+def handle_500(error):
+    app.logger.exception("Unhandled 500 error: %s", error)
+    return jsonify({
+        "status": "error",
+        "message": "Internal Server Error"
         }), 500
 
 # Custom Decorator to enforce ownership security on routes
@@ -534,9 +593,58 @@ def not_found(error):
         "error_details": str(error)
         }), 404
 
+# Health check endpoint for Render/monitoring uptime verification
+@v1.route('/health', methods=['GET'])
+def health_check():
+    try:
+        # db ping lightweight for efficiency
+        db.session.execute(text("SELECT 1"))
+        return jsonify({
+            "status": "ok",
+            "service": "backend",
+            "version": "v1",
+            "db": "ok"
+            }), 200
+    except Exception as e:
+        app.logger.exception("Health check failed: %s", e)
+        return jsonify({
+            "status": "degraded",
+            "service": "backend",
+            "version": "v1",
+            "db": "error"
+            }), 503
+
+# Logging of non 200's responses including 404's. File for operational visibility
+@app.after_request
+def log_non_success_responses(response):
+    if response.status_code >= 400:
+        app.logger.warning(
+            "HTTP %s | %s %s | ip=%s",
+            response.status_code,
+            request.method,
+            request.path,
+            request.remote_addr
+        )
+    return response
+
+#Guard against accidental Flask app overwrite by Flask instance integrity assersion
+from flask import Flask as _FlaskType
+if not isinstance(app, _FlaskType):
+    raise RuntimeError("CONFIG ERROR: 'app' is not a Flask instance (possible overwrite).")
+
 # Registering the Blueprint with Application
 #THIS-> ensures all routes defined on 'v1' are accessible under the /api/v1/prefix
 app.register_blueprint(v1, url_prefix='/api/v1')
+
+# Application of strict limits to auth endpoints for 'brute force'
+# Signup: moderate limit
+signup = limiter.limit("10 per minute")(signup)
+
+# Login: strict limit
+login = limiter.limit("5 per minute")(login)
+
+# Session check: light limit
+check_session = limiter.limit("60 per minute")(check_session)
 
 if __name__ == '__main__':
     app.run(debug=True)
