@@ -1,21 +1,20 @@
 import { useEffect, useState, useMemo } from 'react'
+import Cell from './cell';
 import axios from "axios";
 
 
-function Designer({brushSize, selectedCell, setSelectedCell}){
+function Designer({brushSize, toolbarMode, saveToBackend , setSavetoBackend}){
     const [ gridData, setGridData ] = useState(null);
     const [ error, setError ] = useState(null);
-    const [hovered, setHovered] = useState(null);
+    const [ hovered, setHovered ] = useState(null);
     
     //example get response from the backend of flask
+    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
     const fetchAPI = async () => {
-        const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
         try {
             // Updated to use dynamic API_BASE
             const res = await axios.get(`${API_BASE}/api/game/init`);
             setGridData(res.data);
-            
             // --- DEMO LOG: SUCCESS ---
             console.log("✅ Designer: Cloud Connection Verified!", res.data);
         } 
@@ -28,19 +27,31 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
         }
     };
 
-    const initializeData = async () =>{
+    const initializeData = async () => {
         const saved = localStorage.getItem('grid_save');
-        if (saved) setGridData(JSON.parse(saved));
-		
-        await fetchAPI();
+        if (saved) {
+            const parsedData = JSON.parse(saved);
+            setGridData(prev => prev === null ? parsedData : prev);
+        }
+        else await fetchAPI();
     }
-    
+
+    const saveData = async () => {
+            const payload ={"name": `save ${Date.now()}`, "grid": localStorage.getItem("grid_save")};
+            await axios.post(`${API_BASE}/api/game/save`, payload);
+            setSavetoBackend(false);
+    }
     //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
     useEffect (() => {
         initializeData();
-        if (gridData) localStorage.setItem('grid_save', JSON.stringify(gridData));
     },[])
     
+    useEffect (()=>{
+        saveData();
+    },[saveToBackend])
+    useEffect(() => {
+        if (gridData) localStorage.setItem('grid_save', JSON.stringify(gridData));
+    }, [gridData])
     
     const highlightedIds = useMemo(()=> {
         //create a new set if there is no grid data or hovered objects are not detected 
@@ -90,7 +101,10 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
         if (!gridData || !hovered || highlightedIds.size === 0) return;
         const updateGrid = gridData.grid.map(row =>
             row.map(cell=>{
-                if (highlightedIds.has(cell.id)) return {...cell, type: "selected"};
+                if (highlightedIds.has(cell.id)) {
+                    if (toolbarMode === "erase") return {...cell, type:"empty"};
+                    return {...cell, type: toolbarMode};
+                }
                 return cell;
             })
         );
@@ -115,15 +129,11 @@ function Designer({brushSize, selectedCell, setSelectedCell}){
                                 onMouseLeave={()=>setHovered(null)}
                                 onMouseDown={placeTile}
                                 className={[
-                                    "pt-3 pb-3 text-center text-sm w-full border border-neutral-400 select-none",
-                                    isHighlighted && "bg-neutral-300 border-brand-400", 
-                                ].join(" ")
-                                
-                            }
-
-
+                                    "aspect-square w-full border border-neutral-400 select-none flex items-center justify-center overflow-hidden",
+                                    isHighlighted && "bg-neutral-300 border-brand-400",
+                                ].join(" ")}
                             >
-                                {cell.type}
+                                <Cell type={cell.type} />
                             </div>
                         );
                     })}

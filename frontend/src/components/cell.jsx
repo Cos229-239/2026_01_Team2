@@ -1,19 +1,21 @@
-export default function Cell(){
+export default function Cell({ type }) {
     //accepts cell grid position, selected state, and asset list
-    const assets = [];
-    
+    const ASSET_BASE_URL = "http://127.0.0.1:5000";
+
+    if (!type || type === "empty" || type === "select") {
+        return <span className="text-[8px] opacity-10">{type}</span>
+    }
 
     return (
-            {
-                assets.map({asset, assetId} => (
-                    <div 
-                        key={assetId}
-                        className='relative'
-                        >
-                            <img src=""></img>
-                    </div>
-                    )
-                )
-                }
-            )
-        }
+        <div className="relative w-full h-full">
+            <img
+                src={`${ASSET_BASE_URL}/assets/${type}`}
+                alt=""
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                    e.target.style.display = 'none';
+                }}
+            />
+        </div>
+    );
+}
