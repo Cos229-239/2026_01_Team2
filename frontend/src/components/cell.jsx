@@ -1,7 +1,7 @@
+import { ASSET_BASE_URL } from '../api';
+
 export default function Cell({ type }) {
     //accepts cell grid position, selected state, and asset list
-    const ASSET_BASE_URL = "http://127.0.0.1:5000";
-
     if (!type || type === "empty" || type === "select") {
         return <span className="text-[8px] opacity-10">{type}</span>
     }
@@ -9,7 +9,7 @@ export default function Cell({ type }) {
     return (
         <div className="relative w-full h-full">
             <img
-                src={`${ASSET_BASE_URL}/assets/${type}`}
+                src={`${ASSET_BASE_URL}/${type}`}
                 alt=""
                 className="w-full h-full object-contain"
                 onError={(e) => {
