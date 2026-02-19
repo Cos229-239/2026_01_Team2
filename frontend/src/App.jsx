@@ -3,7 +3,7 @@ import Sidebar from './components/sidebar';
 import Designer from './components/designer';
 import Toolbar from './components/toolbar';
 import PageHeader from './components/pageHeader';
-
+import axios from 'axios';
 //will be deprecated later on once there is additional games added
 const gameInfo = {
   "gameName":"Clash of Clans",
@@ -11,55 +11,78 @@ const gameInfo = {
 }
 
 
-function GetPath({currentPage, path}){
+function GetPath(currentPage, path){
   return(
     `${currentPage} / ${path}`
   )
 }
 
+
 function App() {
-    const [currentPage, setPage] = useState("designer");
-    const [toolbarMode, setToolbarMode] = useState("main");
-    const [brushSize, setBrushSize] = useState(1);
-    const [assetList, setAssetList] = useState({});
+  const [ currPage, setPage ] = useState("designer");
+  // const [ activeTool, setActiveTool ] = useState('select');
+  const [ brushSize, setBrushSize ] = useState(1);
+  const [ toolbarMode, setToolbarMode ] = useState("main");
+  // const [ selectedCell, setSelectedCell ] = useState([]);
+  const [ assetList, setAssetList ] = useState(null)
+  const [ saveToBackend, setSaveToBackend ] = useState(false)
 
-    useEffect(() => {
-        const fetchAssets = async () => {
-            try {
-                const res = await fetch("http://127.0.0.1:5000/api/assets");
-                const data = await res.json();
-                setAssetList(data.assets);
-            } catch (e) {
-                console.error("Could not load asset " + e);
-            }
-        };
-        fetchAssets();
-    }, []);
+  //fetching assets to pass onto children
+  const fetchAssets = async() => {
+  const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
+  try{
+    const res = await axios.get(`${API_BASE}/api/assets`);
+    console.log("Assets Gathered");
+    setAssetList(res.data.assets);
+  }
+  catch (err) {
+    console.error(err);
+  }
+}
 
+  const initializeAssets = async ()=>{
+    const saved = localStorage.getItem('assets');
+    if (saved) setAssetList(JSON.parse(saved));
+    else await fetchAssets();
+  }
+
+  useEffect(()=>{
+    initializeAssets();
+  }, [])
+  
   return (
     <>
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
-        <div className='grid grid-flow-col grid-cols-12 gap-4'> {/*top layer*/}
+        <div className='flex'> {/*top layer*/}
           <div className='col-span-2'> {/* Will be moved into the child component */}
-            <Sidebar />
+            <Sidebar onSelect={setPage} selectedPage={currPage} />
           </div>
-
-          <div className='col-span-8 flex flex-col p-16 overflow-hidden'>
+          <div className='flex flex-col h-screen w-full p-16'>
             <div> {/* keep this within the parent for all contnt */}
+              {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
+              <PageHeader 
+                gameName={gameInfo.gameName} 
+                path={GetPath(currPage, gameInfo.path)} 
+                />
+              <Designer 
+                brushSize={brushSize} 
+                toolbarMode={toolbarMode} 
+                saveToBackend={saveToBackend}
+                setSavetoBackend={setSaveToBackend}
+                />
             </div>
+          </div>
+            
+            <Toolbar
+              toolbarMode = {toolbarMode}
+              setToolbarMode = {setToolbarMode}
+              setBrushSize={setBrushSize}
+              assetList = {assetList}
+              setSaveToBackend={setSaveToBackend}
+                />
 
-                      <div className='outline-1 outline-neutral-300 rounded-md overflow-auto'>
-                          <PageHeader gameName={gameInfo.gameName} path={`${currentPage} / ${gameInfo.path}`} />
-
-                <Designer brushSize={brushSize} activeTool={toolbarMode} />
-            </div>
-            </div>
-            <div className='col-span-2 flex items-center justify-center bg-neutral-200'>
-                <Toolbar toolbarMode={toolbarMode} setToolbarMode={setToolbarMode} setBrushSize={setBrushSize} />
-            </div>
         </div>
-        {/*<Footer />*/}
       </main>
     </>
   )
