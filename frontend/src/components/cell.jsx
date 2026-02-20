@@ -9,7 +9,7 @@ export default function Cell({ type }) {
     return (
         <div className="relative w-full h-full">
             <img
-                src={`${ASSET_BASE_URL}/assets/${type}`}
+                src={`${ASSET_BASE_URL}/api/v1/assets/${type}`}
                 alt=""
                 className="w-full h-full object-contain"
                 onError={(e) => {

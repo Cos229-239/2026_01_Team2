@@ -3,10 +3,10 @@ import Cell from './cell';
 import axios from "axios";
 
 
-function Designer({brushSize, toolbarMode, saveToBackend , setSavetoBackend}){
+function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, overwrite }) {
     const [ gridData, setGridData ] = useState(null);
     const [ error, setError ] = useState(null);
-    const [ hovered, setHovered ] = useState(null);
+    const [hovered, setHovered] = useState(null);
     
     //example get response from the backend of flask
     const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -102,6 +102,7 @@ function Designer({brushSize, toolbarMode, saveToBackend , setSavetoBackend}){
         const updateGrid = gridData.grid.map(row =>
             row.map(cell=>{
                 if (highlightedIds.has(cell.id)) {
+                    if (!overwrite && toolbarMode !== "erase" && cell.type !== "empty") return cell;
                     if (toolbarMode === "erase") return {...cell, type:"empty"};
                     return {...cell, type: toolbarMode};
                 }

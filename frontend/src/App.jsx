@@ -19,20 +19,20 @@ function GetPath(currentPage, path){
 
 
 function App() {
-  const [ currPage, setPage ] = useState("designer");
+    const [currPage, setPage] = useState("designer");
   // const [ activeTool, setActiveTool ] = useState('select');
-  const [ brushSize, setBrushSize ] = useState(1);
-  const [ toolbarMode, setToolbarMode ] = useState("main");
+    const [brushSize, setBrushSize] = useState(1);
+    const [toolbarMode, setToolbarMode] = useState("main");
   // const [ selectedCell, setSelectedCell ] = useState([]);
-  const [ assetList, setAssetList ] = useState(null)
-  const [ saveToBackend, setSaveToBackend ] = useState(false)
+    const [assetList, setAssetList] = useState(null);
+    const [saveToBackend, setSaveToBackend] = useState(false);
+    const [overwrite, setOverwrite] = useState(true);
 
   //fetching assets to pass onto children
   const fetchAssets = async() => {
   const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
-
   try{
-    const res = await axios.get(`${API_BASE}/api/assets`);
+      const res = await axios.get(`${API_BASE}/api/v1/assets`, { withCredentials: true });
     console.log("Assets Gathered");
     setAssetList(res.data.assets);
   }
@@ -66,20 +66,23 @@ function App() {
                 path={GetPath(currPage, gameInfo.path)} 
                 />
               <Designer 
-                brushSize={brushSize} 
-                toolbarMode={toolbarMode} 
-                saveToBackend={saveToBackend}
-                setSavetoBackend={setSaveToBackend}
+                              brushSize={brushSize}
+                              toolbarMode={toolbarMode}
+                              saveToBackend={saveToBackend}
+                              setSavetoBackend={setSaveToBackend}
+                              overwrite={overwrite}
                 />
             </div>
           </div>
             
             <Toolbar
-              toolbarMode = {toolbarMode}
-              setToolbarMode = {setToolbarMode}
-              setBrushSize={setBrushSize}
-              assetList = {assetList}
-              setSaveToBackend={setSaveToBackend}
+                      toolbarMode={toolbarMode}
+                      setToolbarMode={setToolbarMode}
+                      setBrushSize={setBrushSize}
+                      assetList={assetList}
+                      setSaveToBackend={setSaveToBackend}
+                      overwrite={overwrite}
+                      setOverwrite={setOverwrite}
                 />
 
         </div>

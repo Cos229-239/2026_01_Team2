@@ -11,7 +11,7 @@ import pencil from '../assets/toolbar-pencil-regular.svg'
 import arrow from '../assets/toolbar-arrow-pointer-regular.svg'
 import save from '../assets/toolbar-save-regular.svg'
 
-export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, assetList, setSaveToBackend}){
+export default function Toolbar({ toolbarMode, setToolbarMode, setBrushSize, assetList, setSaveToBackend, overwrite, setOverwrite }) {
     const toolItems = {
         "Tools":[
             {"id":0, "name":"Select", "toolName":"select", "asset": arrow},
@@ -55,7 +55,11 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
             case "pencil":
                 return (
                     <>
-                    <Button size="sm" title="Pencil Tool" className="mb-2 w-full" onClick={() => { setToolbarMode("main") }}>Back</Button>
+                        <Button size="sm" title="Pencil Tool" className="mb-2 w-full" onClick={() => { setToolbarMode("main") }}>Back</Button>
+                        <div className="flex flex-col gap-2 w-full p-2">
+                            <span className="text-[10px] font-extrabold text-neutral-600">OVERWRITE</span>
+                            <input type="checkbox" className="cursorPointer" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)} />
+                        </div>
                     <div className="flex flex-col gap-4 p-2 max-h-[80vh] overflow-y-auto w-full items-center">
                         {Object.entries(assetList || {}).map(([group, files]) => (
                             <div key={group} className="w-full flex flex-col items-center gap-2">
@@ -64,7 +68,7 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                                         <img
                                             title={filename}
                                             key={`${group}-${filename}`}
-                                            src={`${ASSET_BASE_URL}/assets/${group}/${filename}`}
+                                            src={`${ASSET_BASE_URL}/api/v1/assets/${group}/${filename}`}
                                             alt={filename}
                                             className="w-14 h-14 object-contain cursor-pointer hover:scale-110 transition-transform hover:bg-white rounded border border-2 border-neutral-300 hover:border-brand-500"
                                             onClick={() => {setToolbarMode(`${group}/${filename}`); console.log("Brush changed to: ", `${group}/${filename}`);
