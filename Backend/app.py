@@ -159,7 +159,7 @@ def load_user(user_id):
 # ------ SAVE/LOAD SCHEMA ------/
 # Defining GameMap class to generate table
 class GameMap(db.Model):
-    __tablename__ = 'game_map'
+    __tablename__ = 'game_maps_v2'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     # Text type to store string type JSON grid
