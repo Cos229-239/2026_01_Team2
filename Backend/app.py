@@ -119,6 +119,7 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 db = SQLAlchemy(app, metadata=metadata) 
 
 with app.app_context():
+    db.drop_all()
     db.create_all
 # Migrate initialization links app and db to migration
 # "render_as...." to support SQLite migration
