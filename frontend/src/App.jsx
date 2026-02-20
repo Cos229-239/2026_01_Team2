@@ -3,7 +3,7 @@ import Sidebar from './components/sidebar';
 import Designer from './components/designer';
 import Toolbar from './components/toolbar';
 import PageHeader from './components/pageHeader';
-import axios from 'axios';
+import api from './api';
 //will be deprecated later on once there is additional games added
 const gameInfo = {
   "gameName":"Clash of Clans",
@@ -29,11 +29,10 @@ function App() {
 
   //fetching assets to pass onto children
   const fetchAssets = async() => {
-  const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
-
+  
   try{
-    const res = await axios.get(`${API_BASE}/api/assets`);
-    console.log("Assets Gathered");
+    const res = await api.get(`/assets`);
+    console.log("✅ Assets Gathered");
     setAssetList(res.data.assets);
   }
   catch (err) {

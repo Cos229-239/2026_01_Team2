@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import Cell from './cell';
-import axios from "axios";
+import api from '../api';
 
 
 function Designer({brushSize, toolbarMode, saveToBackend , setSavetoBackend}){
@@ -9,11 +9,10 @@ function Designer({brushSize, toolbarMode, saveToBackend , setSavetoBackend}){
     const [ hovered, setHovered ] = useState(null);
     
     //example get response from the backend of flask
-    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
     const fetchAPI = async () => {
         try {
             // Updated to use dynamic API_BASE
-            const res = await axios.get(`${API_BASE}/api/game/init`);
+            const res = await api.get(`/game/init`);
             setGridData(res.data);
             // --- DEMO LOG: SUCCESS ---
             console.log("✅ Designer: Cloud Connection Verified!", res.data);
@@ -37,18 +36,43 @@ function Designer({brushSize, toolbarMode, saveToBackend , setSavetoBackend}){
     }
 
     const saveData = async () => {
-            const payload ={"name": `save ${Date.now()}`, "grid": localStorage.getItem("grid_save")};
-            await axios.post(`${API_BASE}/api/game/save`, payload);
-            setSavetoBackend(false);
+    try {
+        // Pull the raw string from local storage
+        const rawStorage = localStorage.getItem("grid_save");
+        
+        // Parse it back into a JavaScript object
+        const parsedData = rawStorage ? JSON.parse(rawStorage) : null;
+        
+        // Extract just the grid array to satisfy Flask's Schema
+        const gridArray = (parsedData && parsedData.grid) ? parsedData.grid : [];
+
+        const payload = {
+            "name": `save ${Date.now()}`, 
+            "grid": gridArray
+        };
+
+        // Send it to Flask
+        await api.post('/game/save', payload);
+        
+        setSavetoBackend(false);
+        console.log("✅ Save successful!");
+        
+    } catch (err) {        
+        console.error("❌ Save failed:", err.response ? err.response.data : err.message);
+        setSavetoBackend(false); 
     }
+};
     //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
     useEffect (() => {
         initializeData();
     },[])
     
     useEffect (()=>{
-        saveData();
-    },[saveToBackend])
+		// This stops React from saving a blank grid on first load
+        if (saveToBackend) {
+			saveData();
+		}
+    }, [saveToBackend])
     useEffect(() => {
         if (gridData) localStorage.setItem('grid_save', JSON.stringify(gridData));
     }, [gridData])
@@ -99,6 +123,10 @@ function Designer({brushSize, toolbarMode, saveToBackend , setSavetoBackend}){
     
     const placeTile = () => {
         if (!gridData || !hovered || highlightedIds.size === 0) return;
+		
+		// Prevents UI tool names from being painted onto the cell, which triggers 404 asset errors.
+		if (toolbarMode === "main" || toolbarMode === "select" || toolbarMode === "pencil") return;
+		
         const updateGrid = gridData.grid.map(row =>
             row.map(cell=>{
                 if (highlightedIds.has(cell.id)) {
