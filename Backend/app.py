@@ -116,11 +116,8 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
 # Database initialization
 # passing metadata to SQLAlchemy enforcing the naming convention
-db = SQLAlchemy(app, metadata=metadata) 
-
-with app.app_context():
-    db.drop_all()
-    db.create_all
+db = SQLAlchemy(app, metadata=metadata)
+   
 # Migrate initialization links app and db to migration
 # "render_as...." to support SQLite migration
 migrate = Migrate(app, db, render_as_batch=True)
@@ -649,6 +646,9 @@ login = limiter.limit("5 per minute")(login)
 
 # Session check: light limit
 check_session = limiter.limit("60 per minute")(check_session)
+
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
     # This automatically builds/updates tables on the cloud without needing a shell
