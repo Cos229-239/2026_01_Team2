@@ -647,4 +647,8 @@ login = limiter.limit("5 per minute")(login)
 check_session = limiter.limit("60 per minute")(check_session)
 
 if __name__ == '__main__':
+    # This automatically builds/updates tables on the cloud without needing a shell
+    with app.app_context():
+        db.create_all()
+    
     app.run(debug=True)
