@@ -1,29 +1,34 @@
+from nt import error, stat
 import os
 import json                                                             # Handler for JSON strin conversion for the db
 from datetime                       import datetime
 from functools                       import wraps
-import re          # Req: for Custom decorators
 
-from flask                               import Flask, jsonify, request, send_from_directory, Blueprint
+from flask                               import Flask, jsonify, message_flashed, request, send_from_directory, Blueprint
 from flask_cors                      import CORS                                     # For cross origin resource sharing with frontend
 from flask_sqlalchemy         import SQLAlchemy                        # For database management
 from flask_restful                  import Api                                        # For api design
 from flask_talisman               import Talisman
-from flask_migrate                 import Migrate                                 # For db schema version control
+from flask_migrate                 import Migrate, current                                 # For db schema version control
+
 # Manages user sesssion states and security
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_user,
+    logout_user,
+    login_required,
+    current_user
+)
+
 # Marshmallow for data validation schemas
 from flask_marshmallow      import Marshmallow
-from marshmallow                import fields, ValidationError
+from marshmallow                import fields, ValidationError, validate
+from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
 from werkzeug.exceptions    import HTTPException
-
-from sqlalchemy import MetaData                                                 #SQLite handler(constraint naming conventions)
-from sqlalchemy import exc
-from sqlalchemy.orm.base import PASSIVE_NO_FETCH
-from sqlalchemy.sql import naming
-from sqlalchemy.types import Concatenable
-from werkzeug.utils import _filename_ascii_strip_re                                                              #Security extensions
 from werkzeug.security import generate_password_hash, check_password_hash            # password ecyption helper
+
+from sqlalchemy import MetaData, text, or_                            #SQLite handler(constraint naming conventions)
 
 # Logging imports for file based error logging (pre production prep)
 import logging
@@ -33,27 +38,44 @@ from logging.handlers import RotatingFileHandler
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-# Import text for db health checks
-from sqlalchemy import text
-
 app = Flask(__name__)
+# Cntralized environment flags {HTTPS, cookies, audits}
+ENV_NAME = (os.environ.get("FLASK_ENV") or os.environ.get("ENV")or "").strip().lower()
+IS_PROD = ENV_NAME in {"prod", "production"}
+
 # This-> sets secret key to sign session cookies (Flask Login requirement)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_secret_key_123')
 
 # Definitions: 
 # Safety audit to prvent running with dev default secrets
 def production_env_audit():
-    env = os.environ.get("FLASK_ENV") or os.environ.get("ENV") or ""
-    is_prod = env.lower() in {"prod", "production"}
-
     # Default secret usage detection
-    if is_prod and app.config.get("SECRET_KEY") == "dev_secret_key_123":
+    if IS_PROD and app.config.get("SECRET_KEY") == "dev_secret_key_123":
         raise RuntimeError("SECURITY BLOCK: SECRET_KEY is using the dev fallback in production")
 
     # Esuring DATABASE_URL is not empty in prduction
-    if is_prod and not os.environ.get("DATABASE_URL"):
+    if IS_PROD and not os.environ.get("DATABASE_URL"):
         raise RuntimeError("SECURITY BLOCK: DATABASE_URL must be set in production.")
 production_env_audit()
+
+# Cookie security tune for cross site sessions
+#       Production requires SameSite=None + Secure for cookies to be sent cross site
+#       Development uses Lax and non sesure local host HTTP testing
+if IS_PROD:
+    app.config.update(
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_SAMESITE="None",
+        REMEMBER_COOKIE_SECURE=True,
+        REMEMBER_COOKIE_SAMESITE="None",
+        )
+else:
+    app.config.update(
+        SESSION_COOKIE_SECURE=False,
+        SESSION_COOKIE_SAMESITE="Lax",
+        REMEMBER_COOKIE_SECURE=False,
+        REMEMBER_COOKIE_SAMESITE="Lax",
+        )
+
 
 # Rotating file logger API errors beyond console ouput
 LOG_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "logs")
@@ -63,8 +85,9 @@ LOG_FILE = os.path.join(LOG_DIR, "api_errors.log")
 
 file_handler = RotatingFileHandler(LOG_FILE, maxBytes=2_000_000, backupCount=5)
 file_handler.setLevel(logging.INFO)
+
 file_handler.setFormatter(logging.Formatter( 
-    "%(acstime)s | %(levelname)s | %(name)s | %(message)s"
+    "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 ))
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
@@ -90,14 +113,29 @@ CORS(app, supports_credentials=True)
 # Talisman sets security headers
 # forces default set below
 #this-> allows us to keep testing locally on the http://127.0.0.1 ip "addy"
-Talisman(app, force_https=False)
+# Talisman with CSP and production HTTPS enforcement
+# tightens security posture without losing local HTTP dev
+csp = {
+    "default-src": [" 'self' "],
+    "img-src": [" 'self' ", "data:", "https:"],
+    "script-src": [" 'self' "],
+    "style-src": [" 'self' ", " 'unsafe-inline' "],
+    "connect-src": [" 'self' "],
+}
+Talisman(
+    app,
+    force_https=IS_PROD,
+    content_security_policy=csp,
+    strict_transport_security=IS_PROD,
+    session_cookie_secure=IS_PROD,
+)
 
 # Global limiter instance (default limits can be tuned per route)
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
-    default_limits=[]
-    )
+    default_limits=[],
+)
 
 # --- DATA CONFIG ---
 # Logic: Use Render's Database if available, otherwise fallback to local SQLite file
@@ -114,6 +152,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
+# MIGRATION BASELINE CHECK logs warning if migration aren't present
+MIGRATIONS_DIR = os.path.join(BASE_DIR, "migrations")
+if not os.path.isdir(MIGRATIONS_DIR):
+    app.logger.warning(
+    "MIGRATIONS WARNING: 'migrations/' folder not found. Ensure baseline migrations are committed to VCS "
+    "so fresh clones can boostrap schema via 'flask db upgrade'. "
+    )
+
 # Database initialization
 # passing metadata to SQLAlchemy enforcing the naming convention
 db = SQLAlchemy(app, metadata=metadata) 
@@ -127,6 +173,12 @@ ma = Marshmallow(app)
 # Initialization of LoginManager to handle user 'session' life cycle
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+# Connection leaks under load prevention via session cleanup
+# Ensures scoped sessions are removed at the end of the app context
+@app.teardown_appcontext
+def cleanup_db_session(exception=None):
+    db.session.remove()
 
 # Initialization of Blueprint for Version 1 API
 # All routes attached to 'v1' will automatically get the prefix '/api/v1' when registered
@@ -147,6 +199,7 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
 # User Loader function allowing Flask Login to reload the user object from the session ID
 @login_manager.user_loader
 def load_user(user_id):
@@ -172,13 +225,13 @@ class GameMap(db.Model):
         return f'<GameMap {self.name}>'
 
 # Validation Schemas 'Marshmallow'
-#This-> ensures inputs are valid before reaching database logic
+#This-> ensures inputs are valid before reaching database logic with char constraints
 class UserSchema(ma.Schema):
-    username = fields.String(required=True)
+    username = fields.String(required=True, validate=validate.Length(max=50))
     password = fields.String(required=True)
 
 class GameMapSchema(ma.Schema):
-    name = fields.String(required=True)
+    name = fields.String(required=True, validate=validate.Length(max=100))
     grid = fields.List(fields.List(fields.Dict()), required=True)       #<--- 2D array validation
 
 #db file creation  ensuring registration of GameMap
@@ -194,26 +247,43 @@ api = Api(v1)                  # RESTful API wrapper Initialization w/v1 Bluepri
 #This->Captures and unhandled exceptions(500 errors) and returns JSON instead of HTML
 @app.errorhandler(Exception)
 def handle_exception(e):
-    # Passing HTTP errors (ie: 404, 403)
+
+    # Passing HTTP errors (ie: 404, 403, etc.) instead of default HTML preserving status codes
     if isinstance(e, HTTPException):
-        return e
-    # JSON return generic
-    return jsonify({
-        "status": "error",
-        "message": "Internal Server Error",
-        "error_details": str(e)
-        }), 500
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": e.name,
+                    "error_details": getattr(e, "description", str(e)),
+                }  
+            ),
+            e.code,
+        )
+    # Ensuring unexpected exceptions are logged for operational visibility.
+    app.logger.exception("Unhandled exception: %s", e)
+    return (
+        jsonify(
+            {
+                "status": "error",
+                "message": "Internal Server Error",
+                "error_details": str(e,)
+            }
+        ),
+        500,
+    )
+
 
 # Secondary error handler hook to ensure exceptions get logged to file
 @app.errorhandler(500)
 def handle_500(error):
     app.logger.exception("Unhandled 500 error: %s", error)
-    return jsonify({
-        "status": "error",
-        "message": "Internal Server Error"
-        }), 500
+    return jsonify({ "status": "error", "message": "Internal Server Error" }), 500
 
-# Custom Decorator to enforce ownership security on routes
+# Custom Decorator V2. Hardened owndership decorator
+#       - Avoiding AttributeError for anonymous users.
+#       - Enforces 401 when a map is owned by requester is not logged in.
+#       - Injects the loaded map object to avoid duplicate queries in handlers.
 def map_owner_required(f):
     """Decorator to ensure the current user owns the map they are trying to access"""
     @wraps(f)
@@ -222,17 +292,22 @@ def map_owner_required(f):
         if not game_map:
             return jsonify({"status": "error", "message": "Map not found"}), 404
 
-        # Unauthorized if map has an owner and not current User
-        if game_map.user_id and game_map.user_id != current_user.id:
-            return jsonify({"status": "error", "message": "Unauthorized: You do not own this map"}), 403
-
+        # If map has an owner, requre authentication and ownership
+        if game_map.user_id:
+            if not current_user.is_authenticated:
+                return jsonify({"status": "error", "message": "Authentication required"}), 401
+            if game_map.user.id != current_user.id:
+                return jsonify({"status": "error", "message": "Unauthorized: You do not own this map"}), 403
+ 
+        kwargs["game_map"] = game_map
         return f(map_id, *args, **kwargs)
+
     return decorated_function
 
 #------ ACCOUNT AUTHENTICATION ROUTES ------ /
 # Signup creation routing to register users and hash passwords
 #Changed @app.route -> v1.route and removed '/api' prefix (handled by blueprint)
-@v1.route('/auth/signup', methods=['POST'])
+@v1.route('/auth/signup', methods=["POST"])
 def signup():
     """Registers a new user with a hashed password"""
     try:
@@ -244,7 +319,7 @@ def signup():
             return jsonify({"status": "error", "message": err.messages}), 400
 
         # Database Check to prevent duplication of usernames
-        if User.query.filter_by(username=data['username']).first():
+        if User.query.filter_by(username=data["username"]).first():
             return jsonify({"status": "error", "message": "Username already taken"}), 409
 
         # Password hasing security before database insert
@@ -254,7 +329,7 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
-        return jsonify({"status": "sucess", "message": "User created sucessfully"}), 201
+        return jsonify({"status": "success", "message": "User created sucessfully"}), 201
     except Exception as e:
         db.session.rollback()
         # Global error handler will catch this keeping catch for 'rollback'
@@ -262,7 +337,7 @@ def signup():
 
 # Login routing verifies hased credentials and return user context
 # Changed @app.route -> v1.route
-@v1.route('/auth/login', methods=['POST'])
+@v1.route('/auth/login', methods=["POST"])
 def login():
     """Verifies user credentials and returns a success status"""
     try: 
@@ -279,11 +354,17 @@ def login():
         if user and check_password_hash(user.password_hash, data['password']):
             # login_user() creates the session cookie for the browser
             login_user(user, remember=True)
-            return jsonify({
-                "status": "sucess",
-                "message": "Login successful",
-                "user": {"id": user.id, "username": user.username}
-                }), 200
+
+            return (
+                jsonify(
+                    {
+                        "status": "success",
+                        "message": "Login successful",
+                        "user": {"id": user.id, "username": user.username},
+                    }
+                ),
+                200, 
+            )
 
         return jsonify({"status": "error", "message": "Invalid username or password"}), 401
     except Exception as e:
@@ -390,22 +471,21 @@ def initialize_game():
 # ------- SAVE ENDPOINT------/
 # @app.route -> @v1 applied
 @v1.route('/game/save', methods=['POST'])
+@login_required                             # Requiring authentication to persist maps enables true owner
 def save_game_map():
     """Recieves grid and name from frontend and saves to database as JSON string"""
     try:
         data = request.get_json()
 
         # Validation: Using strict validation via GameMapSchema
-        # Checks for name and grid to prevent empty saves replaces manual check commented out   
-        #if not data or 'name' not in data or 'grid' not in data:
-          #  return jsonify({"status": "error", "message": "Missing map name or grid data"}), 400
+        # Checks for name and grid to prevent empty saves replaces manual check commented out
         try:
             GameMapSchema().load(data)
         except ValidationError as err:
             return jsonify({"status": "error", "message": err.messages}), 400
 
         map_name = data['name']
-        grid_array = data["grid"]
+        grid_array = data['grid']
 
         #Serialization: Converting the Py list 'grid' into JSON string for the db
         stringified_grid = json.dumps(grid_array)
@@ -414,10 +494,8 @@ def save_game_map():
         new_map = GameMap(
             name=map_name, grid_data=stringified_grid
         )
-
-        # Auto assigning the map to the logged in user if a session exist
-        if current_user.is_authenticated:
-            new_map.user_id = current_user.id
+        # With 'login_required', every saved map is owned
+        new_map.user_id = current_user.id
 
         db.session.add(new_map)
         db.session.commit()
@@ -430,7 +508,6 @@ def save_game_map():
     except Exception as e:                      # <-----This error rollback protection
         db.session.rollback()                      # against db integrity failure
         return jsonify({"status": "error", "message": str(e)}), 500
-# Test above SAVE ENDPOINT pasing JSON via POST request to: http://127.0.0.1:5000/api/v1/game/save
 
 #------ LOAD ENDPOINTS------#
 # Routing to fetch maps specifically owned by the logged in user
@@ -442,23 +519,35 @@ def list_user_maps():
     try:
         # Logic: Filter GameMap table by current_user's ID
         # Sorting maps by updated at stamp <Newest First>
-        user_maps = GameMap.query.filter_by(user_id=current_user.id)\
+        user_maps = (
+            GameMap.query.filter_by(user_id=current_user.id)
             .order_by(GameMap.updated_at.desc()).all()
-
+        )
         # Updated at to response
         map_list = [{"id": m.id, "name": m.name, "created_at": m.created_at, "updated_at": m.updated_at} for m in user_maps]
-        return jsonify({"status": "sucess", "maps": map_list})
+        return jsonify({"status": "success", "maps": map_list})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
   
 # Routing Lets the frontend dev create a "Load Menu" by showing all map names in db
+
 # @app.route -> @v1 applied
 @v1.route('/game/maps', methods=['GET'])
 def list_maps():
     """Returns a list of all saved map names and IDs"""
+    # Leakage prevention for owned/private maps:
+    #       - Anonymous users see only unowned public maps {user_id == NULL}
+    #       - Authenticate users see unowned maps and their own maps
     try:
-        maps = GameMap.query.all()
-        map_list = [{"id": m.id, "name": m.name, "created_at": m.created_at} for m in maps] 
+        if current_user.is_authenticated:
+            maps = (
+                GameMap.query.filter(or_(GameMap.user_id.is_(None), GameMap.user_id == current_user.id))
+                .all()
+            )
+        else:
+            maps = GameMap.query.filter(GameMap.user_id.is_(None)).all()
+
+        map_list = [{"id": m.id, "name": m.name, "created_at": m.create_at} for m in maps]
         return jsonify({"status": "success", "maps": map_list})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -466,21 +555,21 @@ def list_maps():
     # Routing to take in specific ID's, find record, converts text back into JSON list for FrontEnd
     # @app.route -> @v1 applied
 @v1.route('/game/load/<int:map_id>', methods=['GET'])
-def load_game_map(map_id):
+# Enforcing ownership on load unowned remains accessible
+def load_game_map(map_id, game_map=None):
     """Retrieves a specific map and converts the string grid back to a list"""
     try:
-        game_map = GameMap.query.get(map_id)
-        if not game_map:
-            return jsonify({"status": "error", "message": "Map not found"}), 404
-
         # Converting string from the db back into a JSON list
+        # game_map injected by decorator avoiding duplicate db query
         parsed_grid = json.loads(game_map.grid_data)
 
-        return jsonify({
-            "status": "success",
-            "name": game_map.name,
-            "grid": parsed_grid
-        })
+        return jsonify(
+            {
+                "status": "success",
+                "name": game_map.name,
+                "grid": parsed_grid
+            }
+        )
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
@@ -488,17 +577,24 @@ def load_game_map(map_id):
 # Routing Overwrite/Update
 # @app.route -> @v1 applied
 @v1.route('/game/update/<int:map_id>', methods=['PUT'])
-def update_game_map(map_id):
+# authentication requirement + ownership to update
+@login_required
+@map_owner_required
+def update_game_map(map_id, game_map=None):
     """Overwrites an existing map's grid data and name"""
-    # Refactored with @map_owner_required decorator
+    
     # decorator handles the map lookup and ownership checks automatically
     try:
-        data = request.get_json()
-        game_map = GameMap.query.get(map_id)
-
+        data = request.get_json() or {}
+        
         #updating fields if provided in request
         if 'name' in data:
+            # Length constraint validation for update path
+            if len(data["name"]) > 100:
+                return jsonify({"status": "error",
+                                "message": {"name": ["Longer than maximum length 100."]}}), 400
             game_map.name = data['name']
+
         if 'grid' in data:
             game_map.grid_data = json.dumps(data['grid'])
 
@@ -513,11 +609,11 @@ def update_game_map(map_id):
 @v1.route('/game/delete/<int:map_id>', methods=['DELETE'])
 @login_required
 @map_owner_required
-def delete_game_map(map_id):
+def delete_game_map(map_id, game_map=None):
     """Removes a map from the database permanently"""
     # Refactored with @map_owner_required decorator
     try:
-        game_map = GameMap.query.get(map_id)
+       # game_map injection by decorator to avoid duplicate db queries
         db.session.delete(game_map)
         db.session.commit()
         return jsonify({"status": "success", "message": f"Map {map_id} deleted successfully"})
@@ -530,6 +626,9 @@ def delete_game_map(map_id):
 @v1.route('/game/delete_all', methods=['DELETE'])
 def delete_all_maps():
     """Wipes the entire game_map table for environment reset"""
+    # Accidental production wipe Guardrail
+    if IS_PROD:
+        return jsonify({"status": "error", "message": " Operation no permitted in production"}), 403
     try:
         # SQLAlchemny mass deletion logic
         num_rows_deleted = db.session.query(GameMap).delete()
@@ -587,12 +686,17 @@ def get_game_data(name):
 # with anything after http://127.0.0.1:5000 for example: http://127.0.0.1:5000/this_is-notReal
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({
-        "status": "error", 
-        "message": "Endpoint not found. Check your URL structure.", 
-        "error_details": str(error)
-        }), 404
-
+    return(
+        jsonify(
+            {
+                "status": "error",
+                "message": "Endpoint not found. Check your URL structure.",
+                "error_details": str(error),
+            }
+        ),
+        404,
+    )
+   
 # Health check endpoint for Render/monitoring uptime verification
 @v1.route('/health', methods=['GET'])
 def health_check():
@@ -639,10 +743,8 @@ app.register_blueprint(v1, url_prefix='/api/v1')
 # Application of strict limits to auth endpoints for 'brute force'
 # Signup: moderate limit
 signup = limiter.limit("10 per minute")(signup)
-
 # Login: strict limit
 login = limiter.limit("5 per minute")(login)
-
 # Session check: light limit
 check_session = limiter.limit("60 per minute")(check_session)
 
