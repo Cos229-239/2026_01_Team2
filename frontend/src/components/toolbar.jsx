@@ -10,6 +10,7 @@ import eraser from '../assets/toolbar-eraser-regular.svg'
 import pencil from '../assets/toolbar-pencil-regular.svg'
 import arrow from '../assets/toolbar-arrow-pointer-regular.svg'
 import save from '../assets/toolbar-save-regular.svg'
+import {ASSET_BASE_URL} from '../api'
 
 export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, assetList, setSaveToBackend}){
     const toolItems = {
@@ -33,7 +34,6 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
 
     }
     console.log(toolItems.assets);
-    const ASSET_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
     
     const renderView = (currentView) => {
         switch (currentView) {
@@ -43,6 +43,7 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                         <Button size="sm" title="Select Tool" onClick={() => { setToolbarMode("main") }}>Back</Button>
                         {toolItems.Select.map((tool) => (
                             <Button
+								key={tool.id}
                                 title={`Brush Size: ${tool.brushSize}`}
                                 id={tool.id}
                                 className="data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start"
@@ -64,7 +65,7 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                                         <img
                                             title={filename}
                                             key={`${group}-${filename}`}
-                                            src={`${ASSET_BASE_URL}/assets/${group}/${filename}`}
+                                            src={`${ASSET_BASE_URL}/${group}/${filename}`}
                                             alt={filename}
                                             className="w-14 h-14 object-contain cursor-pointer hover:scale-110 transition-transform hover:bg-white rounded border border-2 border-neutral-300 hover:border-brand-500"
                                             onClick={() => {setToolbarMode(`${group}/${filename}`); console.log("Brush changed to: ", `${group}/${filename}`);
@@ -76,10 +77,6 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                     </div>
                     </>
                 );
-            case "save":
-                setSaveToBackend(true);
-                setToolbarMode("main");
-                return;
             default: // Main
                 return (
                     <div className="flex flex-col gap-2">
@@ -87,10 +84,18 @@ export default function Toolbar({toolbarMode, setToolbarMode, setBrushSize, asse
                             const isActive = toolbarMode === tool.toolName || (tool.toolName === "pencil" && toolbarMode.includes("/"));
                             return (
                                 <Button
+									key={tool.id}
                                     title="Default Tool"
                                     id={tool.id}
                                     className={`data-[pressed=true]:scale-100 text-xl h-20 w-full justify-start transition-all ${isActive ? "border-l-8 border-brand-600 bg-neutral-300 shadow-inner" : "border-l-0 border-transparent text-neutral-600 hover:bg-neutral-400"}`}
-                                    onClick={() => { setToolbarMode(tool.toolName) }}
+                                    onClick={() => { 
+										if (tool.toolName === "save") {
+											setSaveToBackend(true);
+											// It's already on "main" or a valid tool, so no need to change the mode
+										} else {
+											setToolbarMode(tool.toolName);
+										}
+								}}
                                 >
                                     <img className="w-10 mr-2" src={tool.asset} alt="" />
                                 </Button>

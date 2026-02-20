@@ -412,4 +412,5 @@ tools/.exe
 tools/.obj
 tools/.pdb
 tools/.ilk
-Backend/instance/database.db
+*.db
+/Backend/instance
