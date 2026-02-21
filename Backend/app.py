@@ -472,7 +472,9 @@ def initialize_game():
 # ------- SAVE ENDPOINT------/
 # @app.route -> @v1 applied
 @v1.route('/game/save', methods=['POST'])
-@login_required                             # Requiring authentication to persist maps enables true owner
+
+# @login_required commented out for dev save fix
+#@login_required                             # Requiring authentication to persist maps enables true owner
 def save_game_map():
     """Recieves grid and name from frontend and saves to database as JSON string"""
     try:
@@ -495,9 +497,16 @@ def save_game_map():
         new_map = GameMap(
             name=map_name, grid_data=stringified_grid
         )
+        #------ DEV LOGIC: -------/
+        #Using current_user.id if logged in, otherwise default to None.
         # With 'login_required', every saved map is owned
-        new_map.user_id = current_user.id
-
+        if current_user.is_authenticated:
+#------- New code for development-------- # save fix for dev
+            new_map.user_id = current_user.id
+        else:
+            new_map.user_id = None      # Maps saved now will be Public
+#-------- END OF DEV LOGIC----------#
+        #new_map.user_id = current_user.id              <-------- Uncomment after dev delete dev logic
         db.session.add(new_map)
         db.session.commit()
 
