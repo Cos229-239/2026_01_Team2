@@ -3,23 +3,25 @@ import collapse from '../assets/sidebar-collapse.svg';
 import brand from '../assets/brand.svg';
 import brush from '../assets/sidebar-Pencil-Brush.svg';
 import paper from '../assets/sidebar-Pencil-Paper.svg';
+import { Link, useLocation } from 'react-router-dom';
 
 
-export default function Sidebar( { onSelect, selectedPage }){
+export default function Sidebar() {
+    const location = useLocation();
     const pages = [
   {
     "name":"Home",
-    "id":0,
+    "path": "Home",
     "asset":brush,
   },
   {
     "name":"Layout",
-    "id":1,
+    "path": "Designer",
     "asset":paper,
   },
   {
     "name":"About",
-    "id":2,
+    "path": "About",
     "asset": brand, //placeholder
   }
 ];
@@ -41,8 +43,9 @@ export default function Sidebar( { onSelect, selectedPage }){
                   'hover:bg-neutral-500 bg-neutral-400':
                   'hover:bg-neutral-300 bg-neutral-300'
                   ) text-xl`} >
-                <Button 
-                  onSelect={ ()=> onSelect(page.name)} className='data-[pressed=true]:scale-100 px-8 justify-start py-8 h-full w-full text-neutral-800' 
+                  <Button
+                      as={Link}
+                      to={page.path} className='data-[pressed=true]:scale-100 px-8 justify-start py-8 h-full w-full text-neutral-800' 
                   radius="md">
                 <img width='24' src={page.asset} alt ={page.name} />
                     {page.name}
