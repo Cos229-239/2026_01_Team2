@@ -37,6 +37,8 @@ from logging.handlers import RotatingFileHandler
 #Rate limiter imports to protext auth endpoints from brute force
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+# Import of GAME_RULES .py file
+from rules_config import GAME_RULES
 
 app = Flask(__name__)
 # Cntralized environment flags {HTTPS, cookies, audits}
@@ -418,7 +420,27 @@ def get_asset_manifest():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# ----- Grid Logic----------/
+# ----- Grid Logic---w/ Dynamic Perimeter Scanning-------/
+# This ---> Identifies tiles surroundings and placement footprint {1X1, 2X2, 3X3}
+def get_brush_perimeter_tiles(grid, start_x, start_y, brush_size):
+    rows = len(grid)
+    cols = len(grid[0]) if rows > 0 else 0
+    neighbors = []
+    for i in range(start_x - 1, start_x + brush_size + 1):
+        if 0 <= i < cols:
+            if 0 <= (start_y - 1) < rows:
+                neighbors.append(grid[start_y - 1][i])
+            if 0 <= (start_y + brush_size) < rows:
+                neighbors.append(grid[start_y + brush_size][i])
+
+    for j in range(start_y, start_y + brush_size):
+        if 0 <= j < rows:
+            if 0 <= (start_x - 1) < cols:
+                neighbors.append(grid[j][start_x - 1])
+            if 0 <= (start_x + brush_size) < cols:
+                neighbors.append(grid[j][start_x +  brush_size])
+    return neighbors
+
 def generate_grid(rows, cols):
     grid = []
     for r in range(rows):
@@ -468,6 +490,54 @@ def initialize_game():
         "grid": grid_data,                  #This-> is the 2d array return   
         "status": "ready"
 })
+
+# --------Placement Validation Logic------/
+@v1.route('/game/validate', methods=['POST'])
+def validate_placement():
+    """
+    Placement Validation Logic Integrations:
+        - 1x1 assets can overwrite/overlap (currently).
+        - 2x2 and 3x3 assets require empty footprints.
+        - Adjacency rules enforced via 'rules_config.'
+    """
+    try:
+        data = request.get_json()
+        if not data or 'coords' not in data or 'grid' not in data:
+            return jsonify({"valid": False, "message": "Missing required data"}), 400
+
+        x, y = data['coords']['x'], data['coords']['y']
+        grid = data['grid']
+        rows, cols = len(grid), len(grid[0]) if len(grid) > 0 else 0
+        brush_size = int(data.get('brush_size', 1))
+        dim_key = f"{brush_size}x{brush_size}"
+
+        # Boundary Logic
+        if x + brush_size > cols or y + brush_size > rows or x < 0 or y < 0:
+            return jsonify({"valid": False, "message": f"{dim_key} placement out of bounds."})
+
+        # Collision Policy: Multi tiled assets maus land on 'empty' cells.                         *!* 1x1 Currently overwrites*!*
+        if brush_size > 1:
+            for r in range(y, y + brush_size):
+                for c in range(x, x + brush_size):
+                    if grid[r][c].get('type') and grid[r][c]['type'] != 'empty':
+                        return jsonify({"valid": False, "message": f"Footprint for {dim_key} asset is occupied."})
+
+        # Adjacency Rules
+        rule = GAME_RULES.get(dim_key)
+        if rule and rule.get('rule_type') != "NONE":
+            perimeter = get_brush_perimeter_tiles(grid, x, y, brush_size)
+            targets = rule.get('target_keywords', [])
+            found = any(any(t in (n.get('type', ' ') or ' ') for t in targets) for n in perimeter)
+
+            if rule['rule_type'] == "REQUIRES_ADJACENT" and not found:
+                return jsonify({"valid": False, "message": rule['error_message']})
+            if rule['rule_type'] == "REQUIRES_ADJACENT" and found:
+                return jsonify({"valid": False, "message": rule['error_message']})
+
+        return jsonify({"valid": True, "message": "Valid placement"})
+    except Exception as e:
+        app.logger.exception("Placement validation failed")
+        return jsonify({"valid": False, "message": str(e)}), 500
 
 # ------- SAVE ENDPOINT------/
 # @app.route -> @v1 applied
