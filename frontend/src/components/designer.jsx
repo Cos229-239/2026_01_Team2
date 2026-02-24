@@ -8,6 +8,7 @@ function Designer({brushSize, toolbarMode, saveToBackend , setSavetoBackend}){
     const [ error, setError ] = useState(null);
     const [ hovered, setHovered ] = useState(null);
     
+    
     //example get response from the backend of flask
     const fetchAPI = async () => {
         try {
@@ -145,7 +146,7 @@ function Designer({brushSize, toolbarMode, saveToBackend , setSavetoBackend}){
         {!gridData ? (
             <div>Loading...</div>
         ): (
-            <div className='h-full w-full text-neutral-800 p-1' onMouseLeave={()=>setHovered(null)}>
+            <div className='h-fit w-fit text-neutral-800 p-1' onMouseLeave={()=>setHovered(null)}>
             {gridData.grid.map((row, rowIndex)=>(
                 <div key={rowIndex} className='flex'>
                     {row.map((cell) => {

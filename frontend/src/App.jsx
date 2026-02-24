@@ -26,6 +26,7 @@ function App() {
   // const [ selectedCell, setSelectedCell ] = useState([]);
   const [ assetList, setAssetList ] = useState(null)
   const [ saveToBackend, setSaveToBackend ] = useState(false)
+  const [ collapsed, setCollapsed ] = useState(false);
 
   //fetching assets to pass onto children
   const fetchAssets = async() => {
@@ -55,10 +56,10 @@ function App() {
       <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
         <div className='flex'> {/*top layer*/}
           <div className='col-span-2'> {/* Will be moved into the child component */}
-            <Sidebar onSelect={setPage} selectedPage={currPage} />
+            <Sidebar onSelect={setPage} selectedPage={currPage} collapsed={collapsed} setCollapsed={setCollapsed}/>
           </div>
           <div className='flex flex-col h-screen w-full p-16'>
-            <div> {/* keep this within the parent for all contnt */}
+            <div className=' flex-col'> {/* keep this within the parent for all contnt */}
               {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
               <PageHeader 
                 gameName={gameInfo.gameName} 
