@@ -4,85 +4,84 @@ import axios from "axios";
 
 
 function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, overwrite }) {
-    const [ gridData, setGridData ] = useState(null);
-    const [ error, setError ] = useState(null);
+    const [gridData, setGridData] = useState(null);
+    const [error, setError] = useState(null);
     const [hovered, setHovered] = useState(null);
-    
+
     //example get response from the backend of flask
     const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
     const fetchAPI = async () => {
         try {
             // Updated to use dynamic API_BASE
-            const res = await axios.get(`${API_BASE}/api/game/init`);
+            const res = await axios.get(`${API_BASE}/api/v1/game/init`);
             setGridData(res.data);
             // --- DEMO LOG: SUCCESS ---
             console.log("✅ Designer: Cloud Connection Verified!", res.data);
-        } 
+        }
         catch (err) {
             const errorMessage = err?.message ?? "request failed";
             setError(errorMessage);
-            
+
             // --- DEMO LOG: ERROR ---
             console.error("❌ Designer: Cloud Connection Failed:", err);
         }
     };
 
-    const initializeData = async () => {
-        const saved = localStorage.getItem('grid_save');
-        if (saved) {
-            const parsedData = JSON.parse(saved);
-            setGridData(prev => prev === null ? parsedData : prev);
-        }
-        else await fetchAPI();
-    }
-
     const saveData = async () => {
-            const payload ={"name": `save ${Date.now()}`, "grid": localStorage.getItem("grid_save")};
-            await axios.post(`${API_BASE}/api/game/save`, payload);
-            setSavetoBackend(false);
+        try {
+            const payload = { "name": `save ${Date.now()}`, "grid": gridData.grid };
+            await axios.post(`${API_BASE}/api/v1/game/save`, payload);
+        } catch (err) {
+            console.log("Save Failed: " + err.response?.data || err.message);
+        } finally { setSavetoBackend(false); }
     }
+    useEffect(() => {
+        const saved = localStorage.getItem('grid_save');
+        if (saved) setGridData(JSON.parse(saved));
+        else fetchAPI();
+    }, [])
+
     //this runs the function based on an action (in this case, the function being run is only run once at the beginning. '[]' would be the action or function being called)
-    useEffect (() => {
-        initializeData();
-    },[])
-    
-    useEffect (()=>{
-        saveData();
-    },[saveToBackend])
+    useEffect(() => {
+        if (saveToBackend) {
+            saveData();
+        }
+    }, [saveToBackend])
+
     useEffect(() => {
         if (gridData) localStorage.setItem('grid_save', JSON.stringify(gridData));
     }, [gridData])
-    
-    const highlightedIds = useMemo(()=> {
+
+    const highlightedIds = useMemo(() => {
         //create a new set if there is no grid data or hovered objects are not detected 
         if (!gridData || !hovered) return new Set();
-        
+
         // restrict bounds of the cell group
-        const inBounds = ( x, y ) => x >= 0 && y >= 0 && x < gridData.cols && y < gridData.grid.length;
+        const inBounds = (x, y) => x >= 0 && y >= 0 && x < gridData.cols && y < gridData.grid.length;
         //use the id on the client end to determine space
         const cellId = (x, y) => `cell_${x}_${y}`;
-        
-        
+
+
         const { x, y } = hovered;
         const set = new Set();
-        if (brushSize == 1){
-            if(inBounds(x,y)) set.add(cellId(x,y));
+        if (brushSize == 1) {
+            if (inBounds(x, y)) set.add(cellId(x, y));
 
             return set;
         }
-        if (brushSize == 2){
-            const offsets =[
-                [0,0], [1,0],
-                [0,1], [1,1],
+        if (brushSize == 2) {
+            const offsets = [
+                [0, 0], [1, 0],
+                [0, 1], [1, 1],
             ];
-            for (const [dx, dy] of offsets){
-                const nx = x+dx;
-                const ny = y+dy;
-                if (inBounds(nx, ny)) set.add(cellId(nx,ny));
+            for (const [dx, dy] of offsets) {
+                const nx = x + dx;
+                const ny = y + dy;
+                if (inBounds(nx, ny)) set.add(cellId(nx, ny));
             }
             return set;
         }
-        if (brushSize == 3){
+        if (brushSize == 3) {
             for (let dy = -1; dy <= 1; dy++) {
                 for (let dx = -1; dx <= 1; dx++) {
                     const nx = x + dx;
@@ -91,57 +90,57 @@ function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, ove
                 }
 
             }
-    
+
             return set;
         }
         return set;
     }, [gridData, hovered, brushSize]);
-    
+
     const placeTile = () => {
         if (!gridData || !hovered || highlightedIds.size === 0) return;
         const updateGrid = gridData.grid.map(row =>
-            row.map(cell=>{
+            row.map(cell => {
                 if (highlightedIds.has(cell.id)) {
                     if (!overwrite && toolbarMode !== "erase" && cell.type !== "empty") return cell;
-                    if (toolbarMode === "erase") return {...cell, type:"empty"};
-                    return {...cell, type: toolbarMode};
+                    if (toolbarMode === "erase") return { ...cell, type: "empty" };
+                    return { ...cell, type: toolbarMode };
                 }
                 return cell;
             })
         );
-        setGridData({...gridData, grid: updateGrid});
+        setGridData({ ...gridData, grid: updateGrid });
     }
 
-    return(
+    return (
         <>
-        {error && <div className="text-warning-600"> Error: {error}</div>}
-        {!gridData ? (
-            <div>Loading...</div>
-        ): (
-            <div className='h-full w-full text-neutral-800 p-1' onMouseLeave={()=>setHovered(null)}>
-            {gridData.grid.map((row, rowIndex)=>(
-                <div key={rowIndex} className='flex'>
-                    {row.map((cell) => {
-                        const isHighlighted = highlightedIds.has(cell.id);
-                        return(
-                            <div
-                                key = {cell.id}
-                                onMouseEnter={()=>setHovered({ x:cell.x, y:cell.y})}
-                                onMouseLeave={()=>setHovered(null)}
-                                onMouseDown={placeTile}
-                                className={[
-                                    "aspect-square w-full border border-neutral-400 select-none flex items-center justify-center overflow-hidden",
-                                    isHighlighted && "bg-neutral-300 border-brand-400",
-                                ].join(" ")}
-                            >
-                                <Cell type={cell.type} />
-                            </div>
-                        );
-                    })}
+            {error && <div className="text-warning-600"> Error: {error}</div>}
+            {!gridData ? (
+                <div>Loading...</div>
+            ) : (
+                <div className='h-full w-full text-neutral-800 p-1' onMouseLeave={() => setHovered(null)}>
+                    {gridData.grid.map((row, rowIndex) => (
+                        <div key={rowIndex} className='flex'>
+                            {row.map((cell) => {
+                                const isHighlighted = highlightedIds.has(cell.id);
+                                return (
+                                    <div
+                                        key={cell.id}
+                                        onMouseEnter={() => setHovered({ x: cell.x, y: cell.y })}
+                                        onMouseLeave={() => setHovered(null)}
+                                        onMouseDown={placeTile}
+                                        className={[
+                                            "aspect-square w-full border border-neutral-400 select-none flex items-center justify-center overflow-hidden",
+                                            isHighlighted && "bg-neutral-300 border-brand-400",
+                                        ].join(" ")}
+                                    >
+                                        <Cell type={cell.type} />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ))}
                 </div>
-            ))}
-            </div>
-        )}
+            )}
         </>
     )
 }

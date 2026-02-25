@@ -1,6 +1,6 @@
 export default function Cell({ type }) {
     //accepts cell grid position, selected state, and asset list
-    const ASSET_BASE_URL = "http://127.0.0.1:5000";
+    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     if (!type || type === "empty" || type === "select") {
         return <span className="text-[8px] opacity-10">{type}</span>
@@ -9,10 +9,11 @@ export default function Cell({ type }) {
     return (
         <div className="relative w-full h-full">
             <img
-                src={`${ASSET_BASE_URL}/api/v1/assets/${type}`}
-                alt=""
+                src={`${API_BASE}/api/v1/assets/${type}`}
+                alt={type}
                 className="w-full h-full object-contain"
                 onError={(e) => {
+                    console.log("Failed to load asset " + type);
                     e.target.style.display = 'none';
                 }}
             />
