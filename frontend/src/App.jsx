@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import Sidebar from './components/sidebar';
 import Designer from './components/designer';
+import FAQ from './components/faq';
 import Toolbar from './components/toolbar';
 import PageHeader from './components/pageHeader';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import Hero from './components/hero';
+import './index.css';
 
 //will be deprecated later on once there is additional games added
 const gameInfo = {
@@ -25,51 +28,50 @@ function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrus
     const currentPageName = location.pathname.replace('/', '') || 'designer';
 
     return (
-            <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
-                <div className='flex'> {/*top layer*/}
-                    <div className='col-span-2'> {/* Will be moved into the child component */}
-                        <Sidebar />
-                    </div>
+        <main className='h-screen w-screen flex bg-neutral-100 overflow-hidden'>
+            {/*Navbar*/}
+            <div className='flex-shrink-0'>
+                <Sidebar />
+            </div>
 
-                    <div className='flex flex-col h-screen w-full p-16'>
-                        <div> {/* keep this within the parent for all contnt */}
-                            {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
-                            <PageHeader
-                                gameName={gameInfo.gameName}
-                                path={GetPath(currentPageName, gameInfo.path)}
+            {/*Dynamic Page Structure*/}
+            <div className='flex flex-col flex-grow p-10 overflow-auto'>
+                <PageHeader
+                    gameName={gameInfo.gameName}
+                    path={GetPath(currentPageName, gameInfo.path)}
+                />
+                <div className="mt-8 flex-grow">
+                    <Routes>
+                        <Route path="/" element={<Hero />} />
+                        <Route path="/designer" element={
+                            <Designer
+                                brushSize={brushSize}
+                                toolbarMode={toolbarMode}
+                                saveToBackend={saveToBackend}
+                                setSavetoBackend={setSaveToBackend}
+                                overwrite={overwrite}
                             />
-                            <div className="flex-grow overflow-auto">
-                                <Routes>
-                                    <Route path="/" element={<Navigate to="/designer" />} />
-                                    <Route path="/designer" element={
-                                        <Designer
-                                            brushSize={brushSize}
-                                            toolbarMode={toolbarMode}
-                                            saveToBackend={saveToBackend}
-                                            setSavetoBackend={setSaveToBackend}
-                                            overwrite={overwrite}
-                                        />
-                                    } />
-                                    <Route path="/login" element={<div>Login Page Coming Soon</div>} />
-                                    <Route path="*" element={<div>404: Page Not Found</div>} />
-                                </Routes>
-                            </div>
-                        </div>
-                    </div>
-
-                    <Toolbar
-                        toolbarMode={toolbarMode}
-                        setToolbarMode={setToolbarMode}
-                        setBrushSize={setBrushSize}
-                        assetList={assetList}
-                        setSaveToBackend={setSaveToBackend}
-                        overwrite={overwrite}
-                        setOverwrite={setOverwrite}
-                    />
-
+                        } />
+                        <Route path="/about" element={<FAQ />} />
+                        <Route path="/login" element={<div>Login Page Coming Soon</div>} />
+                        <Route path="*" element={<div>404: Page Not Found</div>} />
+                    </Routes>
                 </div>
-            </main>
-    )
+            </div>
+
+            <div className='flex-shrink-0'>
+                <Toolbar
+                    toolbarMode={toolbarMode}
+                    setToolbarMode={setToolbarMode}
+                    setBrushSize={setBrushSize}
+                    assetList={assetList}
+                    setSaveToBackend={setSaveToBackend}
+                    overwrite={overwrite}
+                    setOverwrite={setOverwrite}
+                />
+            </div>
+    </main >
+    );
 }
 
 function App() {
