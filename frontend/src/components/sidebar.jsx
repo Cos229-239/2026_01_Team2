@@ -8,7 +8,7 @@ import brand from '../assets/brand.svg';
 import brush from '../assets/sidebar-Pencil-Brush.svg';
 import paper from '../assets/sidebar-Pencil-Paper.svg';
 
-export default function Sidebar() {
+export default function Sidebar({user}) {
     const location = useLocation();
 
     const pages = [
@@ -29,6 +29,12 @@ export default function Sidebar() {
         }
     ];
 
+    if (user) {
+        pages.push({ "name": "Profile", "path": "/profile", "asset": brand });
+    } else {
+        pages.push({ "name": "Login", "path": "/login", "asset": collapse });
+    }
+
     return (
         <div className='w-2xs h-screen sticky top-0'>
             <nav className='h-full bg-neutral-200 flex flex-col'>
@@ -47,7 +53,7 @@ export default function Sidebar() {
                         const isActive = location.pathname === page.path;
 
                         return (
-                            <div key={page.path} className={`flex text-xl transition-colors ${isActive ? 'bg-neutral-400 hover:bg-neutral-500' : 'bg-neutral-300 hover:bg-neutral-200'}`}>
+                            <div key={page.path} className={`flex text-xl transition-all border-l-4 ${isActive ? 'border-blue-500 bg-neutral-400' : 'border-transparent bg-neutral-300'}`}>
                                 <Button
                                     as={Link}
                                     to={page.path}

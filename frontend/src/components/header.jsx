@@ -20,7 +20,7 @@ export default function Header({ user, setUser }) {
         <header className="w-full border-b border-slate-200 bg-neutral-900 px-6 py-4">
             <nav className="mx-auto flex max-w-7xl items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Link to="/" className="text-xl font-bold text-slate-900">MyHQ</Link>
+                    <Link to="/" className="text-xl font-bold text-white">MyHQ</Link>
                     <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-600 uppercase">Alpha</span>
                 </div>
 

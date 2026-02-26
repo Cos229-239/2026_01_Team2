@@ -40,13 +40,12 @@ function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrus
 
             {/*Navbar*/}
             <div className='flex flex-grow overflow-hidden'>
-                <Sidebar />
+                <Sidebar user={user} />
 
                 {/*Dynamic Page Structure*/}
                 <main className='flex flex-col flex-grow p-10 overflow-auto'>
                     <PageHeader
-                        gameName={location.pathname === '/designer' ? gameInfo.gameName : currentPageName.charAt(0).toUpperCase() + currentPageName.slice(1)}
-                        path={GetPath(currentPageName, gameInfo.path)}
+                        gameName={location.pathname === '/designer' ? gameInfo.gameName : (currentPageName || 'Home').charAt(0).toUpperCase() + (currentPageName ? currentPageName.slice(1) : 'ome')}
                     />
                     <div className="mt-8 flex-grow">
                         <Routes>

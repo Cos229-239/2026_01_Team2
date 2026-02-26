@@ -16,9 +16,14 @@ export default function AchievementGrid({ user, maps }) {
     // Logic to determine if a light is green or grey
     const getStatus = (title) => {
         if (!user) return "disabled";
-        if (title === "New Recruit") return "complete";
+        if (title === "New Recruit") return "complete"; // Sign up is inherent if they see this
         if (title === "Hey, That’s Me!" && user.about) return "complete";
-        if (title === "At First I was Lost" && user.layouts?.length >= 1) return "complete";
+
+        // Check the MAPS array we just passed in
+        if (title === "At First I was Lost" && maps?.length >= 1) return "complete";
+        if (title === "But Now I am Found" && maps?.length >= 5) return "complete";
+        if (title === "Cartographer" && maps?.length >= 100) return "complete";
+
         return "disabled";
     };
 
