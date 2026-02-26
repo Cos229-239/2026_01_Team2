@@ -1,10 +1,10 @@
-import { useState } from react;
+import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from "@heroui/react";
 
-const AuthForm = ({ setUser }) => {
-    const [isLogin, setIsLogin] = useState(true);
+const AuthForm = ({ setUser, mode }) => {
+    const [isLogin, setIsLogin] = useState(mode !== 'signup');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
@@ -18,6 +18,7 @@ const AuthForm = ({ setUser }) => {
         setError('');
 
         const endpoint = isLogin ? '/api/v1/auth/login' : '/api/v1/auth/signup';
+        //const payload = isLogin ? { username, password } : { username, password, email };
         const payload = { username, password };
 
         try {
@@ -69,8 +70,8 @@ const AuthForm = ({ setUser }) => {
                     {error && (
                         <div className="mb-4 w-full">
                             <Alert color="danger" title="Login Failed"
-                                description={error} variant="faded"
-                                onClose={() => setError("")} />
+                                description={typeof error === 'object' ? (error.message || JSON.stringify(error)) : error}
+                                variant="faded" onClose={() => setError("")} />
                         </div>
                     )}
 

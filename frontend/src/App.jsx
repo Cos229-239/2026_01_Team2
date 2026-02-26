@@ -12,7 +12,7 @@ import './index.css';
 import Header from './components/header';
 import Footer from './components/footer';
 import AuthForm from './components/authForm';
-import axios from 'axios';
+import Profile from './components/profile';
 
 axios.defaults.withCredentials = true;
 
@@ -60,9 +60,9 @@ function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrus
                                     overwrite={overwrite}
                                 />
                             } />
-                            <Route path="/profile" element={<Profile user={user} />}/>
+                            <Route path="/profile" element={user ? <Profile user={user} />: <Navigate to="/login"/> }/>
                             <Route path="/login" element={user ? <Navigate to="/designer" /> : <AuthForm setUser={setUser} />} />
-                            <Route path="/signup" element={<AuthForm mode="signup" />}/>
+                            <Route path="/signup" element={user ? <Navigate to="/designer" /> : <AuthForm setUser={setUser} mode="signup" />}/>
                             <Route path="/about" element={<FAQ />} />
                             <Route path="*" element={<div>404: Page Not Found</div>} />
                         </Routes>
