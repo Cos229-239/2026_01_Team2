@@ -12,6 +12,9 @@ import './index.css';
 import Header from './components/header';
 import Footer from './components/footer';
 import AuthForm from './components/authForm';
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
 
 //will be deprecated later on once there is additional games added
 const gameInfo = {
@@ -57,8 +60,10 @@ function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrus
                                     overwrite={overwrite}
                                 />
                             } />
-                            <Route path="/about" element={<FAQ />} />
+                            <Route path="/profile" element={<Profile user={user} />}/>
                             <Route path="/login" element={user ? <Navigate to="/designer" /> : <AuthForm setUser={setUser} />} />
+                            <Route path="/signup" element={<AuthForm mode="signup" />}/>
+                            <Route path="/about" element={<FAQ />} />
                             <Route path="*" element={<div>404: Page Not Found</div>} />
                         </Routes>
                     </div>

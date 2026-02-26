@@ -18,7 +18,7 @@ const AuthForm = ({ setUser }) => {
         setError('');
 
         const endpoint = isLogin ? '/api/v1/auth/login' : '/api/v1/auth/signup';
-        const payload = isLogin ? { email, password } : { email, password, username };
+        const payload = { username, password };
 
         try {
             const res = await axios.post(`${API_BASE}${endpoint}`, payload, { withCredentials: true });
@@ -36,16 +36,16 @@ const AuthForm = ({ setUser }) => {
                     {isLogin ? 'Welcome Back' : 'Create Account'}
                 </h2>
 
-                <form onSubmit={handleSubmit} className="space-gap-y-4">
-                    {!isLogin && (
-                        <div className="mb-4">
-                            <label className="block text-sm font-semibold mb-1">Username</label>
-                            <input type="text" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={username} onChange={(e) => setUsername(e.target.value)} required />
-                        </div>
-                    )}
+                <form onSubmit={handleSubmit} className="space-gap-y-4 flex flex-col gap-4">
                     <div className="mb-4">
-                        <label className="block text-sm font-semibold mb-1">Email</label>
+                        <label className="block text-sm font-semibold mb-1">Username</label>
+                        <input type="text" className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter your username" required />
+                    </div>
+
+                    {!isLogin && (
+                    <div className="mb-4">
+                        <label className="block text-sm font-semibold mb-1">Email (TEMPORARILY DISABLED)</label>
                         <input
                             type="email"
                             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -54,6 +54,7 @@ const AuthForm = ({ setUser }) => {
                             required
                         />
                     </div>
+                    )}
                     <div className="mb-6">
                         <label className="block text-sm font-semibold mb-1">Password</label>
                         <input
@@ -61,7 +62,7 @@ const AuthForm = ({ setUser }) => {
                             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
+                            placeholder="*********" required
                         />
                     </div>
 
