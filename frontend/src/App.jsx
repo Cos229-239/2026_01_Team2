@@ -9,6 +9,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useLocation } from 'react-router-dom';
 import Hero from './components/hero';
 import './index.css';
+import Header from './components/header';
+import Footer from './components/footer';
 
 //will be deprecated later on once there is additional games added
 const gameInfo = {
@@ -28,49 +30,55 @@ function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrus
     const currentPageName = location.pathname.replace('/', '') || 'designer';
 
     return (
-        <main className='h-screen w-screen flex bg-neutral-100 overflow-hidden'>
+        <div className='h-screen w-screen flex flex-col overflow-hidden'>
+
+            <Header />
+
             {/*Navbar*/}
-            <div className='flex-shrink-0'>
+            <div className='flex flex-grow overflow-hidden'>
                 <Sidebar />
-            </div>
 
-            {/*Dynamic Page Structure*/}
-            <div className='flex flex-col flex-grow p-10 overflow-auto'>
-                <PageHeader
-                    gameName={gameInfo.gameName}
-                    path={GetPath(currentPageName, gameInfo.path)}
-                />
-                <div className="mt-8 flex-grow">
-                    <Routes>
-                        <Route path="/" element={<Hero />} />
-                        <Route path="/designer" element={
-                            <Designer
-                                brushSize={brushSize}
-                                toolbarMode={toolbarMode}
-                                saveToBackend={saveToBackend}
-                                setSavetoBackend={setSaveToBackend}
-                                overwrite={overwrite}
-                            />
-                        } />
-                        <Route path="/about" element={<FAQ />} />
-                        <Route path="/login" element={<div>Login Page Coming Soon</div>} />
-                        <Route path="*" element={<div>404: Page Not Found</div>} />
-                    </Routes>
-                </div>
-            </div>
+                {/*Dynamic Page Structure*/}
+                <main className='flex flex-col flex-grow p-10 overflow-auto'>
+                    <PageHeader
+                        gameName={location.pathname === '/designer' ? gameInfo.gameName : currentPageName.charAt(0).toUpperCase() + currentPageName.slice(1)}
+                        path={GetPath(currentPageName, gameInfo.path)}
+                    />
+                    <div className="mt-8 flex-grow">
+                        <Routes>
+                            <Route path="/" element={<Hero />} />
+                            <Route path="/designer" element={
+                                <Designer
+                                    brushSize={brushSize}
+                                    toolbarMode={toolbarMode}
+                                    saveToBackend={saveToBackend}
+                                    setSaveToBackend={setSaveToBackend}
+                                    overwrite={overwrite}
+                                />
+                            } />
+                            <Route path="/about" element={<FAQ />} />
+                            <Route path="/login" element={<div>Login Page Coming Soon</div>} />
+                            <Route path="*" element={<div>404: Page Not Found</div>} />
+                        </Routes>
+                    </div>
+                    <Footer />
+                </main>
 
-            <div className='flex-shrink-0'>
-                <Toolbar
-                    toolbarMode={toolbarMode}
-                    setToolbarMode={setToolbarMode}
-                    setBrushSize={setBrushSize}
-                    assetList={assetList}
-                    setSaveToBackend={setSaveToBackend}
-                    overwrite={overwrite}
-                    setOverwrite={setOverwrite}
-                />
-            </div>
-    </main >
+                {location.pathname === '/designer' && (
+                    <div className='flex-shrink-0'>
+                        <Toolbar
+                            toolbarMode={toolbarMode}
+                            setToolbarMode={setToolbarMode}
+                            setBrushSize={setBrushSize}
+                            assetList={assetList}
+                            setSaveToBackend={setSaveToBackend}
+                            overwrite={overwrite}
+                            setOverwrite={setOverwrite}
+                        />
+                    </div>
+                )}
+            </div >
+        </div>
     );
 }
 
