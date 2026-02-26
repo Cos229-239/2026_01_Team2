@@ -12,7 +12,7 @@ const achievements = [
     { id: 9, title: "Recognized", desc: "10 Schema/Layout uses", icon: Award },
 ];
 
-export default function AchievementGrid({ user }) {
+export default function AchievementGrid({ user, maps }) {
     // Logic to determine if a light is green or grey
     const getStatus = (title) => {
         if (!user) return "disabled";

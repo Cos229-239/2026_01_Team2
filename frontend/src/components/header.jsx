@@ -17,7 +17,7 @@ export default function Header({ user, setUser }) {
         }
     };
     return (
-        <header className="w-full border-b border-slate-200 bg-white px-6 py-4">
+        <header className="w-full border-b border-slate-200 bg-neutral-900 px-6 py-4">
             <nav className="mx-auto flex max-w-7xl items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Link to="/" className="text-xl font-bold text-slate-900">MyHQ</Link>

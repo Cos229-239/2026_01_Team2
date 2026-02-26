@@ -44,7 +44,8 @@ export default function Profile({ user }) {
                 <p className="text-slate-500 font-medium">Manage your designs and settings (alpha)</p>
             </div>
 
-            <Divider className="my-6" />
+            {/*<Divider className="my-6" />*/}
+            <AchievementGrid user={user} maps={myMaps}/>
 
             {/*Maps Grid*/}
             <div className="space-y-4">

@@ -4,21 +4,19 @@ import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
-
-const handleSave = async () => {
-    try {
-        const updatedData = {
-            username: document.getElementById('callsign-input').value,
-            about: document.getElementById('about-input').value,
-        };
-        await axios.post(`${API_BASE}/api/v1/user/update`, updatedData, { withCredentials: true });
-        window.location.reload();
-    } catch (err) {
-        console.error("Maintenance failed: ", err);
-    }
-};
-
 export default function SettingsPanel({ isOpen, onClose, user }) {
+    const handleSave = async () => {
+        try {
+            const updatedData = {
+                username: document.getElementById('callsign-input').value,
+                about: document.getElementById('about-input').value,
+            };
+            await axios.post(`${API_BASE}/api/v1/user/update`, updatedData, { withCredentials: true });
+            window.location.reload();
+        } catch (err) {
+            console.error("Maintenance failed: ", err);
+        }
+    };
     return (
         <div className={`fixed top-0 right-0 h-full w-80 bg-neutral-900 border-l-4 border-neutral-800 shadow-2xl transform transition-transform duration-300 z-50 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
