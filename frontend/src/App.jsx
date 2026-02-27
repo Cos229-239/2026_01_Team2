@@ -45,9 +45,12 @@ function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrus
                 {/*Dynamic Page Structure*/}
                 <main className='flex flex-col flex-grow p-10 overflow-auto'>
                     <PageHeader
-                        gameName={location.pathname === '/designer' ? gameInfo.gameName : (currentPageName || 'Home').charAt(0).toUpperCase() + (currentPageName ? currentPageName.slice(1) : 'ome')}
-                    />
-                    <div className="mt-8 flex-grow">
+                        /* If on /designer, show game name (Clash of Clans). Otherwise, show Page Name (About, Home, etc) */
+                        gameName={location.pathname === '/designer' ? gameInfo.gameName : (currentPageName === 'Home' ? 'Home' : currentPageName.charAt(0).toUpperCase() + currentPageName.slice(1))}
+
+                        /* If on /designer, show the full breadcrumb. Otherwise, just show the page name path */
+                        path={location.pathname === '/designer' ? GetPath("Designer", gameInfo.path) : `${currentPageName.charAt(0).toUpperCase() + currentPageName.slice(1)} / System`}
+                    />                    <div className="mt-8 flex-grow">
                         <Routes>
                             <Route path="/" element={<Hero />} />
                             <Route path="/designer" element={

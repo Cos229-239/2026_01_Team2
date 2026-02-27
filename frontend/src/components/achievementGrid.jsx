@@ -1,12 +1,12 @@
-import { UserCheck, Contact2, Compass, MapPin, Map, Quill, Footprints, Rocket, Award } from 'lucide-react';
+import { UserCheck, Contact2, Compass, MapPin, Map as LMap, Feather, Footprints, Rocket, Award } from 'lucide-react';
 
 const achievements = [
     { id: 1, title: "New Recruit", desc: "Sign up", icon: UserCheck },
     { id: 2, title: "Hey, That’s Me!", desc: "Fill out profile info", icon: Contact2 },
     { id: 3, title: "At First I was Lost", desc: "1st saved layout", icon: Compass },
     { id: 4, title: "But Now I am Found", desc: "5th saved layout", icon: MapPin },
-    { id: 5, title: "Cartographer", desc: "100th saved layout", icon: Map },
-    { id: 6, title: "To Whom it may Concern", desc: "1st Forum Post", icon: Quill },
+    { id: 5, title: "Cartographer", desc: "100th saved layout", icon: LMap },
+    { id: 6, title: "To Whom it may Concern", desc: "1st Forum Post", icon: Feather },
     { id: 7, title: "One Small Step", desc: "1st Game Schema", icon: Footprints },
     { id: 8, title: "One Giant Leap", desc: "10th Game Schema", icon: Rocket },
     { id: 9, title: "Recognized", desc: "10 Schema/Layout uses", icon: Award },

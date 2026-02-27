@@ -17,11 +17,11 @@ export default function Header({ user, setUser }) {
         }
     };
     return (
-        <header className="w-full border-b border-slate-200 bg-neutral-900 px-6 py-4">
+        <header className="bg-neutral-50 border-b border-neutral-200 text-neutral-800 py-3 px-6 flex items-center justify-between">
             <nav className="mx-auto flex max-w-7xl items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Link to="/" className="text-xl font-bold text-white">MyHQ</Link>
-                    <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-600 uppercase">Alpha</span>
+                    <Link to="/" className="text-xl font-bold text-slate-900 hover:opacity-80 transition-opacity">MyHQ</Link>
+                    <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-100 uppercase">Alpha</span>
                 </div>
 
                 {/* Desktop Links */}

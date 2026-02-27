@@ -17,7 +17,7 @@ export default function DiscordRadio() {
             <div className="bg-neutral-900 overflow-hidden border-x-4 border-neutral-800">
                 {/* Replace URL with your actual Discord Server Widget URL */}
                 <iframe
-                    src="https://discord.com/widget?id=YOUR_SERVER_ID&theme=dark"
+                    src="https://discord.com/widget?id=1034616802937946182&theme=dark"
                     width="100%"
                     height="400"
                     allowtransparency="true"
