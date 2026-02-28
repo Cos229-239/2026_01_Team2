@@ -30,7 +30,7 @@ export default function Sidebar({ user }) {
     // 2. Return the actual UI
     return (
         <div className='w-2xs h-screen sticky top-0'>
-            <nav className='h-full bg-neutral-200 flex flex-col'>
+            <nav className='w-64 min-w-[256px] h-screen sticky top-0 flex-shrink-0'>
                 {/* Header: Branding & Controls */}
                 <div className="flex justify-between pr-12 p-8 content-center">
                     <img width='36' src={brand} alt='brand' />

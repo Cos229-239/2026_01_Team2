@@ -3,7 +3,7 @@ import Cell from './cell';
 import axios from "axios";
 
 
-function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, overwrite }) {
+function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, overwrite, currentMapID, setCurrentMapID }) {
     const [gridData, setGridData] = useState(null);
     const [error, setError] = useState(null);
     const [hovered, setHovered] = useState(null);
@@ -29,12 +29,31 @@ function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, ove
 
     const saveData = async () => {
         try {
-            const payload = { "name": `save ${Date.now()}`, "grid": gridData.grid };
-            await axios.post(`${API_BASE}/api/v1/game/save`, payload);
+            const mapName = window.prompt("Enter Layout Callsign:", "New Strategy");
+            if (!mapName) return;
+
+            const payload = { "name": `Map_${Date.now()}`, "grid": gridData.grid };
+
+            if (currentMapID) {
+                const overwrite = window.confirm("Overwrite existing file? Cancel to save as a new version)");
+                if (overwrite) {
+                    await axios.put(`${API_BASE}/api/v1/game/update/${currentMapID}`, payload, { withCredentials: true });
+                    console.log("Cloud: Existing map updated.");
+                } else {
+                    const res = await axios.post(`${API_BASE}/api/v1/game/save`, payload, { withCredentials: true });
+                    if (res.data.map_id) setCurrentMapID(res.data.map_id);
+                    console.log("Cloud: New Version Created.");
+                }
+            } else {
+                const res = await axios.post(`${API_BASE}/api/v1/game/save`, payload, { withCredentials: true });
+                if (res.data.map_id) setCurrentMapID(res.data.map_id);
+                console.log("New map created.")
+            }
         } catch (err) {
-            console.log("Save Failed: " + err.response?.data || err.message);
+            console.log("Save Failed: ", err.response?.data || err.message);
         } finally { setSavetoBackend(false); }
     }
+
     useEffect(() => {
         const saved = localStorage.getItem('grid_save');
         if (saved) setGridData(JSON.parse(saved));
@@ -109,7 +128,14 @@ function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, ove
             })
         );
         setGridData({ ...gridData, grid: updateGrid });
-    }
+    };
+
+    const handleMouseEnter = (cell) => {
+        setHovered({ x: cell.x, y: cell.y });
+        if (window.event?.buttons === 1) {
+            placeTile();
+        }
+    };
 
     return (
         <>
@@ -125,9 +151,9 @@ function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, ove
                                 return (
                                     <div
                                         key={cell.id}
-                                        onMouseEnter={() => setHovered({ x: cell.x, y: cell.y })}
+                                        onMouseEnter={() => handleMouseEnter(cell)}
                                         onMouseLeave={() => setHovered(null)}
-                                        onMouseDown={placeTile}
+                                        onMouseDown={placeTile} 
                                         className={[
                                             "aspect-square w-full border border-neutral-400 select-none flex items-center justify-center overflow-hidden",
                                             isHighlighted && "bg-neutral-300 border-brand-400",

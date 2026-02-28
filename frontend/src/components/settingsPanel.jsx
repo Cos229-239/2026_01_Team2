@@ -1,15 +1,21 @@
 import { X, Settings, Moon, Sun, Monitor, Save } from 'lucide-react';
 import { Button, Switch } from "@heroui/react";
 import axios from 'axios';
+import { useState } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
 export default function SettingsPanel({ isOpen, onClose, user }) {
+    const [darkMode, setDarkMode] = useState(false);
+    const [username, setUsername] = useState('');
+    //const [password, setPassword] = useState('');
+    const [about, setAbout] = useState('');
+
     const handleSave = async () => {
         try {
             const updatedData = {
-                username: document.getElementById('callsign-input').value,
-                about: document.getElementById('about-input').value,
+                username: username,
+                about: about,
             };
             await axios.post(`${API_BASE}/api/v1/user/update`, updatedData, { withCredentials: true });
             window.location.reload();
@@ -38,7 +44,9 @@ export default function SettingsPanel({ isOpen, onClose, user }) {
                             <Moon size={16} className="text-neutral-400" />
                             <span className="text-sm text-neutral-300 font-mono">Dark Mode</span>
                         </div>
-                        <Switch defaultSelected color="primary" size="sm" />
+                        <Switch defaultSelected color="primary" size="sm" isSelected={false}
+                            onValueChange={(isSelected) => setDarkMode(isSelected)}
+/>
                     </div>
                 </div>
 
@@ -50,6 +58,8 @@ export default function SettingsPanel({ isOpen, onClose, user }) {
                         <input
                             type="text" id="callsign-input"
                             defaultValue={user?.username}
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             className="w-full bg-neutral-950 border border-neutral-800 p-2 text-sm text-neutral-300 rounded font-mono focus:border-orange-500 outline-none transition-colors"
                         />
                     </div>
@@ -60,6 +70,8 @@ export default function SettingsPanel({ isOpen, onClose, user }) {
                     <textarea
                         className="w-full bg-neutral-950 border border-neutral-800 p-2 text-sm text-neutral-300 rounded font-mono h-20 focus:border-blue-500 outline-none resize-none"
                         placeholder="Enter operator bio..." id="about-input"
+                        value={about}
+                        onChange={(e) => setAbout(e.target.value)}
                     />
                 </div>
 

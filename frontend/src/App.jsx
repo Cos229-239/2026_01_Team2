@@ -29,7 +29,7 @@ function GetPath(currentPage, path) {
     )
 }
 
-function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrushSize, saveToBackend, setSaveToBackend, overwrite, setOverwrite, user, setUser }) {
+function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrushSize, saveToBackend, setSaveToBackend, overwrite, setOverwrite, user, setUser, setCurrentMapID, currentMapID }) {
     const location = useLocation();
     const currentPageName = location.pathname.replace('/', '') || 'designer';
 
@@ -60,6 +60,8 @@ function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrus
                                     saveToBackend={saveToBackend}
                                     setSaveToBackend={setSaveToBackend}
                                     overwrite={overwrite}
+                                    currentMapID={currentMapID}
+                                    setCurrentMapID={setCurrentMapID}
                                 />
                             } />
                             <Route path="/profile" element={user ? <Profile user={user} />: <Navigate to="/login"/> }/>
@@ -101,6 +103,8 @@ function App() {
     });
     const [saveToBackend, setSaveToBackend] = useState(false);
     const [overwrite, setOverwrite] = useState(true);
+    const [currentMapID, setCurrentMapID] = useState('');
+
     const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
     //fetching assets to pass onto children
@@ -144,7 +148,10 @@ function App() {
                 saveToBackend={saveToBackend}
                 setSaveToBackend={setSaveToBackend}
                 overwrite={overwrite}
-                setOverwrite={setOverwrite} />
+                setOverwrite={setOverwrite}
+                currentMapID={currentMapID}
+                setCurrentMapID={setCurrentMapID}
+            />
         </Router>
     );
 }

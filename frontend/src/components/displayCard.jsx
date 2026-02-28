@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 
 export default function DisplayCard({
     type = "map", // "map", "achievement", or "game"
-    title, subtitle, image, id, footerAction
+    title, subtitle, image, id, footerAction, 
+    isOwner = false
 }) {
     const theme = {
         map: { color: "primary", label: "Layout" },
@@ -32,11 +33,13 @@ export default function DisplayCard({
                 {type === "map" ? (
                     <>
                         <Button as={Link} to={`/designer?id=${id}`} size="sm" color="primary" className="flex-1 font-bold">
-                            Edit
+                            {isOwner ? "Edit" : "View Intel"}
                         </Button>
-                        <Button size="sm" variant="flat" color="danger" onPress={() => footerAction(id)}>
-                            Delete
-                        </Button>
+                        {isOwner && (
+                            <Button size="sm" variant="flat" color="danger" onPress={() => footerAction(id)}>
+                                Delete
+                            </Button>
+                        )}
                     </>
                 ) : (
                     <Button fullWidth size="sm" variant="ghost" color={theme.color} className="font-bold">
