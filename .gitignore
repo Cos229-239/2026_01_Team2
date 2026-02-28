@@ -412,3 +412,5 @@ tools/.exe
 tools/.obj
 tools/.pdb
 tools/.ilk
+*.db
+/Backend/instance
