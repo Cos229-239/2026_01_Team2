@@ -4,12 +4,12 @@ import json                                                             # Handle
 from datetime                       import datetime
 from functools                       import wraps
 
-from flask                               import Flask, jsonify, message_flashed, request, send_from_directory, Blueprint
+from flask                               import Flask, jsonify, request, send_from_directory, Blueprint
 from flask_cors                      import CORS                                     # For cross origin resource sharing with frontend
 from flask_sqlalchemy         import SQLAlchemy                        # For database management
 from flask_restful                  import Api                                        # For api design
 from flask_talisman               import Talisman
-from flask_migrate                 import Migrate, current                                 # For db schema version control
+from flask_migrate                 import Migrate                             # For db schema version control
 
 # Manages user sesssion states and security
 from flask_login import (
@@ -24,7 +24,7 @@ from flask_login import (
 # Marshmallow for data validation schemas
 from flask_marshmallow      import Marshmallow
 from marshmallow                import fields, ValidationError, validate
-from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
+
 from werkzeug.exceptions    import HTTPException
 from werkzeug.security import generate_password_hash, check_password_hash            # password ecyption helper
 
@@ -118,11 +118,11 @@ CORS(app, supports_credentials=True)
 # Talisman with CSP and production HTTPS enforcement
 # tightens security posture without losing local HTTP dev
 csp = {
-    "default-src": [" 'self' "],
-    "img-src": [" 'self' ", "data:", "https:"],
-    "script-src": [" 'self' "],
-    "style-src": [" 'self' ", " 'unsafe-inline' "],
-    "connect-src": [" 'self' "],
+    "default-src": ["'self'"],
+    "img-src": ["'self'", "data:", "https:"],
+    "script-src": [" self'"],
+    "style-src": ["'self'", " 'unsafe-inline' "],
+    "connect-src": ["'self'"],
 }
 Talisman(
     app,
@@ -299,7 +299,7 @@ def map_owner_required(f):
         if game_map.user_id:
             if not current_user.is_authenticated:
                 return jsonify({"status": "error", "message": "Authentication required"}), 401
-            if game_map.user.id != current_user.id:
+            if game_map.user_id != current_user.id:
                 return jsonify({"status": "error", "message": "Unauthorized: You do not own this map"}), 403
  
         kwargs["game_map"] = game_map
@@ -542,9 +542,7 @@ def validate_placement():
 # ------- SAVE ENDPOINT------/
 # @app.route -> @v1 applied
 @v1.route('/game/save', methods=['POST'])
-
-# @login_required commented out for dev save fix
-#@login_required                             # Requiring authentication to persist maps enables true owner
+@login_required                             # Requiring authentication to persist maps enables true owner
 def save_game_map():
     """Recieves grid and name from frontend and saves to database as JSON string"""
     try:
@@ -567,16 +565,8 @@ def save_game_map():
         new_map = GameMap(
             name=map_name, grid_data=stringified_grid
         )
-        #------ DEV LOGIC: -------/
-        #Using current_user.id if logged in, otherwise default to None.
-        # With 'login_required', every saved map is owned
-        if current_user.is_authenticated:
-#------- New code for development-------- # save fix for dev
-            new_map.user_id = current_user.id
-        else:
-            new_map.user_id = None      # Maps saved now will be Public
-#-------- END OF DEV LOGIC----------#
-        #new_map.user_id = current_user.id              <-------- Uncomment after dev delete dev logic
+
+        new_map.user_id = current_user.id
         db.session.add(new_map)
         db.session.commit()
 
@@ -594,6 +584,7 @@ def save_game_map():
 # @app.route -> @v1 applied
 @v1.route('/game/my-maps', methods=['GET'])
 @login_required
+
 def list_user_maps():
     """Returns a list of maps belonging only to the current user"""
     try:
@@ -613,6 +604,7 @@ def list_user_maps():
 
 # @app.route -> @v1 applied
 @v1.route('/game/maps', methods=['GET'])
+
 def list_maps():
     """Returns a list of all saved map names and IDs"""
     # Leakage prevention for owned/private maps:
@@ -627,7 +619,7 @@ def list_maps():
         else:
             maps = GameMap.query.filter(GameMap.user_id.is_(None)).all()
 
-        map_list = [{"id": m.id, "name": m.name, "created_at": m.create_at} for m in maps]
+        map_list = [{"id": m.id, "name": m.name, "created_at": m.created_at} for m in maps]
         return jsonify({"status": "success", "maps": map_list})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -636,6 +628,7 @@ def list_maps():
     # @app.route -> @v1 applied
 @v1.route('/game/load/<int:map_id>', methods=['GET'])
 # Enforcing ownership on load unowned remains accessible
+@map_owner_required
 def load_game_map(map_id, game_map=None):
     """Retrieves a specific map and converts the string grid back to a list"""
     try:
@@ -828,10 +821,7 @@ login = limiter.limit("5 per minute")(login)
 # Session check: light limit
 check_session = limiter.limit("60 per minute")(check_session)
 
-with app.app_context():
-    db.create_all()
-
 if __name__ == '__main__':
     # This automatically builds/updates tables on the cloud without needing a shell
       
-    app.run(debug=True)
+    app.run(debug=(not IS_PROD))
