@@ -72,6 +72,17 @@ Delete Map (Remove)
 - Purpose: Wipes the entire database table.
 - Security: Operation is strictly blocked (403 Forbidden) in Production environments.
 
+!*** Be aware *** ! VERSION CONTROL
+Load/Save schema has v2 implemented the following will be need when migrated to v2: (minimal v2 implements strategy (fast + safe)
+        1. Create v2 = Blueprint("v2", __name__)
+        2. Add only new endpoints there:
+            - /game/validate-placement
+            - (optional) /game/apply-placement </ If you want backend-authoritative updates
+        3. Keep save/load routes identical for now (or reuse v1 handlers), but DO NOT CHANGE v1 behavior
+        4. Update THIS api_documentation to read:
+            - "v2 adds placement validition with brush footprints and rules_config"
+            - "v1 remains unchanged/deprecated later"
+
 6. Authentication & Sessions
 Signup
 - POST /api/v1/auth/signup
