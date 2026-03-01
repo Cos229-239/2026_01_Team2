@@ -13,6 +13,11 @@ const AuthForm = ({ setUser, mode }) => {
     const navigate = useNavigate();
     const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
+    const toggleMode = () => {
+        setIsLogin(!isLogin);
+        setError('');
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -82,7 +87,7 @@ const AuthForm = ({ setUser, mode }) => {
 
                 <p className="mt-6 text-center text-neutral-500">
                     {isLogin ? "Don't have an account?" : "Already have an account?"}
-                    <button onClick={() => setIsLogin(!isLogin)}
+                    <button onClick={toggleMode}
                         className="ml-2 text-blue-600 font-bold hover:underline">
                         {isLogin ? 'Sign Up' : 'Log In'}
                     </button>

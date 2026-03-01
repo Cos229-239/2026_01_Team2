@@ -5,24 +5,25 @@ import { useState } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
-export default function SettingsPanel({ isOpen, onClose, user }) {
+export default function SettingsPanel({ isOpen, onClose, user, setUser }) {
     const [darkMode, setDarkMode] = useState(false);
-    const [username, setUsername] = useState('');
+    const [username, setUsername] = useState(user?.username || '');
     //const [password, setPassword] = useState('');
-    const [about, setAbout] = useState('');
+    const [about, setAbout] = useState(user?.about || '');
 
     const handleSave = async () => {
         try {
             const updatedData = {
-                username: username,
-                about: about,
+                username, about
             };
-            await axios.post(`${API_BASE}/api/v1/user/update`, updatedData, { withCredentials: true });
-            window.location.reload();
+            const res = await axios.post(`${API_BASE}/api/v1/user/update`, updatedData, { withCredentials: true });
+            setUser(res.data.user);
+            onClose();
         } catch (err) {
             console.error("Maintenance failed: ", err);
         }
     };
+
     return (
         <div className={`fixed top-0 right-0 h-full w-80 bg-neutral-900 border-l-4 border-neutral-800 shadow-2xl transform transition-transform duration-300 z-50 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
@@ -57,7 +58,6 @@ export default function SettingsPanel({ isOpen, onClose, user }) {
                         <span className="text-[10px] text-neutral-600 uppercase ml-1">Callsign</span>
                         <input
                             type="text" id="callsign-input"
-                            defaultValue={user?.username}
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="w-full bg-neutral-950 border border-neutral-800 p-2 text-sm text-neutral-300 rounded font-mono focus:border-orange-500 outline-none transition-colors"

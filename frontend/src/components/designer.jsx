@@ -3,7 +3,7 @@ import Cell from './cell';
 import axios from "axios";
 
 
-function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, overwrite, currentMapID, setCurrentMapID }) {
+function Designer({ brushSize, toolbarMode, saveToBackend, setSaveToBackend, overwrite, currentMapID, setCurrentMapID }) {
     const [gridData, setGridData] = useState(null);
     const [error, setError] = useState(null);
     const [hovered, setHovered] = useState(null);
@@ -32,7 +32,7 @@ function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, ove
             const mapName = window.prompt("Enter Layout Callsign:", "New Strategy");
             if (!mapName) return;
 
-            const payload = { "name": `Map_${Date.now()}`, "grid": gridData.grid };
+            const payload = { "name": mapName, "grid": gridData.grid };
 
             if (currentMapID) {
                 const overwrite = window.confirm("Overwrite existing file? Cancel to save as a new version)");
@@ -51,7 +51,7 @@ function Designer({ brushSize, toolbarMode, saveToBackend, setSavetoBackend, ove
             }
         } catch (err) {
             console.log("Save Failed: ", err.response?.data || err.message);
-        } finally { setSavetoBackend(false); }
+        } finally { setSaveToBackend(false); }
     }
 
     useEffect(() => {

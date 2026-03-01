@@ -4,7 +4,7 @@ import DisplayCard from "./DisplayCard";
 import { Divider, Spinner, Button } from "@heroui/react"; // Assuming HeroUI
 import { Settings } from "lucide-react"; // Or your preferred icon set
 import AchievementGrid from './achievementGrid';
-// import SettingsPanel from "./SettingsPanel"; // Import your panel here
+ import SettingsPanel from "./SettingsPanel"; // Import your panel here
 
 export default function Profile({ user }) {
     const [myMaps, setMyMaps] = useState([]);
@@ -97,7 +97,7 @@ export default function Profile({ user }) {
             </div>
 
             {/* Placeholder for the Settings Panel you want to activate */}
-            {/* <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} user={user} /> */}
+             <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} user={user} /> 
         </div>
     );
 }
