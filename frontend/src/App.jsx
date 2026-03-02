@@ -1,58 +1,159 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './components/sidebar';
 import Designer from './components/designer';
+import FAQ from './components/faq';
 import Toolbar from './components/toolbar';
 import PageHeader from './components/pageHeader';
+import axios from 'axios';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import Hero from './components/hero';
+import './index.css';
+import Header from './components/header';
+import Footer from './components/footer';
+import AuthForm from './components/authForm';
+import Profile from './components/profile';
+
+axios.defaults.withCredentials = true;
 
 //will be deprecated later on once there is additional games added
 const gameInfo = {
-  "gameName":"Clash of Clans",
-  "path": "Clash Of Clans"
+    "gameName": "Clash of Clans",
+    "path": "Clash Of Clans"
 }
 
 
-function GetPath(currentPage, path){
-  return(
-    `${currentPage} / ${path}`
-  )
+function GetPath(currentPage, path) {
+    return (
+        `${currentPage} / ${path}`
+    )
+}
+
+function AppContent({ assetList, brushSize, toolbarMode, setToolbarMode, setBrushSize, saveToBackend, setSaveToBackend, overwrite, setOverwrite, user, setUser, setCurrentMapID, currentMapID }) {
+    const location = useLocation();
+    const currentPageName = location.pathname.replace('/', '') || 'designer';
+
+    return (
+        <div className='h-screen w-screen flex flex-col overflow-hidden'>
+
+            <Header user={user} setUser={setUser} />
+
+            {/*Navbar*/}
+            <div className='flex flex-grow overflow-hidden'>
+                <Sidebar user={user} />
+
+                {/*Dynamic Page Structure*/}
+                <main className='flex flex-col flex-grow p-10 overflow-auto'>
+                    <PageHeader
+                        /* If on /designer, show game name (Clash of Clans). Otherwise, show Page Name (About, Home, etc) */
+                        gameName={location.pathname === '/designer' ? gameInfo.gameName : (currentPageName === 'Home' ? 'Home' : currentPageName.charAt(0).toUpperCase() + currentPageName.slice(1))}
+
+                        /* If on /designer, show the full breadcrumb. Otherwise, just show the page name path */
+                        path={location.pathname === '/designer' ? GetPath("Designer", gameInfo.path) : `${currentPageName.charAt(0).toUpperCase() + currentPageName.slice(1)} / System`}
+                    />                    <div className="mt-8 flex-grow">
+                        <Routes>
+                            <Route path="/" element={<Hero />} />
+                            <Route path="/designer" element={
+                                <Designer
+                                    brushSize={brushSize}
+                                    toolbarMode={toolbarMode}
+                                    saveToBackend={saveToBackend}
+                                    setSaveToBackend={setSaveToBackend}
+                                    overwrite={overwrite}
+                                    currentMapID={currentMapID}
+                                    setCurrentMapID={setCurrentMapID}
+                                />
+                            } />
+                            <Route path="/profile" element={user ? <Profile user={user} />: <Navigate to="/login"/> }/>
+                            <Route path="/login" element={user ? <Navigate to="/designer" /> : <AuthForm setUser={setUser} />} />
+                            <Route path="/signup" element={user ? <Navigate to="/designer" /> : <AuthForm setUser={setUser} mode="signup" />}/>
+                            <Route path="/about" element={<FAQ />} />
+                            <Route path="*" element={<div>404: Page Not Found</div>} />
+                        </Routes>
+                    </div>
+                    <Footer />
+                </main>
+
+                {location.pathname === '/designer' && (
+                    <div className='flex-shrink-0'>
+                        <Toolbar
+                            user={user}
+                            toolbarMode={toolbarMode}
+                            setToolbarMode={setToolbarMode}
+                            setBrushSize={setBrushSize}
+                            assetList={assetList}
+                            setSaveToBackend={setSaveToBackend}
+                            overwrite={overwrite}
+                            setOverwrite={setOverwrite}
+                        />
+                    </div>
+                )}
+            </div >
+        </div>
+    );
 }
 
 function App() {
-  const [ currPage, setPage ] = useState("designer");
-  const [ activeTool, setActiveTool ] = useState('select');
-  const [ brushSize, setBrushSize ] = useState(1);
-  const [ toolbarMode, setToolbarMode ] = useState("main");
-  const [ selectedCell, setSelectedCell ] = useState([]);
+    const [user, setUser] = useState(null);
+    const [brushSize, setBrushSize] = useState(1);
+    const [toolbarMode, setToolbarMode] = useState("main");
+    const [assetList, setAssetList] = useState(() => {
+        const saved = localStorage.getItem('assets');
+        return saved ? JSON.parse(saved) : null;
+    });
+    const [saveToBackend, setSaveToBackend] = useState(false);
+    const [overwrite, setOverwrite] = useState(true);
+    const [currentMapID, setCurrentMapID] = useState('');
 
+    const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
-  return (
-    <>
-      <main className='h-screen w-screen flex-row align-center bg-neutral-100'>
-        <div className='flex'> {/*top layer*/}
-          <div className='col-span-2'> {/* Will be moved into the child component */}
-            <Sidebar onSelect={setPage} selectedPage={currPage} />
-          </div>
-          <div className='flex flex-col h-screen w-full p-16'>
-            <div> {/* keep this within the parent for all contnt */}
-              {/* <h1 className='text-2xl'>This React Page is Working</h1> */}
-              <PageHeader 
-                gameName={gameInfo.gameName} 
-                path={GetPath(currPage, gameInfo.path)} 
-                />
-            <Designer brushSize={brushSize}/>
-            </div>
-          </div>
-            
-            <Toolbar
-              toolbarMode = {toolbarMode}
-              setToolbarMode = {setToolbarMode}
-              setBrushSize={setBrushSize}
-                />
+    //fetching assets to pass onto children
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const res = await axios.get(`${API_BASE}/api/v1/auth/session`, { withCredentials: true });
+                if (res.data.is_logged_in) {
+                    setUser(res.data.user);
+                }
+            } catch (err) {
+                console.log("No active session found. " + err);
+            }
+        };
 
-        </div>
-      </main>
-    </>
-  )
+        const fetchAssets = async () => {
+            try {
+                const res = await axios.get(`${API_BASE}/api/v1/assets`, { withCredentials: true });
+                console.log("Assets Gathered");
+                setAssetList(res.data.assets);
+                localStorage.setItem('assets', JSON.stringify(res.data.assets));
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
+        checkAuth();
+        if (!assetList) fetchAssets();
+    }, []);
+
+    return (
+        <Router>
+            <AppContent
+                user={user}
+                setUser={setUser}
+                assetList={assetList}
+                brushSize={brushSize}
+                toolbarMode={toolbarMode}
+                setToolbarMode={setToolbarMode}
+                setBrushSize={setBrushSize}
+                saveToBackend={saveToBackend}
+                setSaveToBackend={setSaveToBackend}
+                overwrite={overwrite}
+                setOverwrite={setOverwrite}
+                currentMapID={currentMapID}
+                setCurrentMapID={setCurrentMapID}
+            />
+        </Router>
+    );
 }
 
 export default App
